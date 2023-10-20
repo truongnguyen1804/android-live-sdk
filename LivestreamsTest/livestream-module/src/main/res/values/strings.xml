@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">SigmaLive</string>
+    <string name="url_invalid">"Url invalid"</string>
+</resources>

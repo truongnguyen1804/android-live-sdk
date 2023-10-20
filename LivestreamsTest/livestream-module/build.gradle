@@ -1,0 +1,63 @@
+import javax.crypto.Cipher
+import javax.crypto.spec.SecretKeySpec
+
+plugins {
+    id 'com.android.library'
+}
+
+android {
+    compileSdk 33
+
+    defaultConfig {
+        minSdk 21
+        targetSdk 33
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        def pkg = project.hasProperty('pkg') ? project.pkg : 'com.sigma.live.demo'
+        def secret = project.hasProperty('secret') ? project.secret : 'N7u5AIRtyT'
+        def token = getToken(pkg, secret)
+        debug {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            buildConfigField "String", "TOKEN", "\"${token}\""
+        }
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            buildConfigField "String", "TOKEN", "\"${token}\""
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+
+def getToken(String pkg, String secret) {
+    System.out.println("Load token " + pkg + " " + secret)
+    byte[] key = new byte[16];
+    byte[] pkgBytes = pkg.getBytes();
+    for (int i = 0; i < 16 && i < pkgBytes.length; i++) {
+        key[i] = pkgBytes[i];
+    }
+    String method = "AES";
+    SecretKeySpec skeySpec = new SecretKeySpec(key, method);
+    Cipher cipher = Cipher.getInstance(method);
+    cipher.init(Cipher.ENCRYPT_MODE, skeySpec);
+    byte[] encrypted = cipher.doFinal(secret.getBytes("UTF-8"));
+    return Base64.getEncoder().encodeToString(encrypted);
+}
+
+dependencies {
+
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.9.0'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+}

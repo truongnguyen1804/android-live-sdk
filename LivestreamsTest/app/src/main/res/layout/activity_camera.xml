@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".CameraActivity">
+
+    <RelativeLayout
+        android:id="@+id/view_screen"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+
+    <RelativeLayout
+        android:id="@+id/view_group"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/img_change_cam"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_alignParentLeft="true"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/background_button"
+            android:padding="8dp"
+            android:src="@drawable/ic_autorenew" />
+
+        <ImageView
+            android:id="@+id/img_library"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_alignParentRight="true"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/background_button"
+            android:padding="8dp"
+            android:src="@drawable/ic_autorenew" />
+
+        <ImageView
+            android:id="@+id/img_live"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:padding="8dp"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:background="@drawable/background_button"
+            android:src="@drawable/ic_play_arrow"
+            android:layout_marginBottom="20dp" />
+
+        <ImageView
+            android:id="@+id/img_camera"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_alignParentBottom="true"
+            android:layout_marginRight="48dp"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/background_button"
+            android:src="@drawable/ic_videocam"
+            android:padding="8dp"
+            android:layout_toLeftOf="@id/img_live" />
+
+        <ImageView
+            android:id="@+id/img_mic"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_alignParentBottom="true"
+            android:layout_marginLeft="48dp"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/background_button"
+            android:padding="8dp"
+            android:src="@drawable/ic_mic"
+            android:layout_toRightOf="@id/img_live" />
+    </RelativeLayout>
+
+    <ImageView
+        android:id="@+id/img_tets"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+
+</RelativeLayout>
