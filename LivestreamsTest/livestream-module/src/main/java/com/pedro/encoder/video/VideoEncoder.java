@@ -389,7 +389,6 @@ public class VideoEncoder implements GetCameraData {
         while (!Thread.interrupted() && running) {
             for (; running; ) {
                 int outBufferIndex = -3;
-                FullLog.LogE("getDataFromSurfaceAPI21"+" -- "+videoInfo +" -- "+ videoEncoder);
                 try {
                     outBufferIndex = videoEncoder.dequeueOutputBuffer(videoInfo, TIMEOUT);
                 } catch (RuntimeException exception) {
@@ -415,7 +414,6 @@ public class VideoEncoder implements GetCameraData {
 
                     //This ByteBuffer is H264
                     //readonly
-                    FullLog.LogD("outBufferIndex:  "+ outBufferIndex);
                     ByteBuffer bb = videoEncoder.getOutputBuffer(outBufferIndex);
                     if ((videoInfo.flags & MediaCodec.BUFFER_FLAG_CODEC_CONFIG) != 0) {
 

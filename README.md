@@ -5,7 +5,7 @@ Camera
    Bước 1: Khởi tạo
 
    ```java
-   LiveManager.getInstance().setup(Activity activity, ViewGroup container, int[] paddings, LiveListener listener, PreviewSizeListener previewSizeListener, OpenGlView.SurfaceListener surfaceListener)
+   LiveManager.getInstance().setup(Activity activity, ViewGroup container, int[] paddings, LiveListener listener,boolean isFrontCam, PreviewSizeListener previewSizeListener, OpenGlView.SurfaceListener surfaceListener)
    ```
 
    ```java
@@ -103,11 +103,9 @@ Xử lý resume
 Khi luồng live bị disconnect và cần kết nối lại:
 
 ```java
-// option: gọi lại camera front
-LiveManager.getInstance().setCameraFace(CameraFace.Front);
 
 // Khởi tạo lại
-LiveManager.getInstance().setup(Activity activity, ViewGroup container, int[] paddings, LiveListener listener, PreviewSizeListener previewSizeListener, OpenGlView.SurfaceListener surfaceListener);
+LiveManager.getInstance().setup(Activity activity, ViewGroup container, int[] paddings, LiveListener listener,boolean isFrontCam PreviewSizeListener previewSizeListener, OpenGlView.SurfaceListener surfaceListener);
   
 // start live 
  LiveManager.getInstance().start("rtmp://live.twitch.tv/app/...");

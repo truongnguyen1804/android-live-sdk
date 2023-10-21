@@ -38,6 +38,12 @@ public class ScreenActivity extends AppCompatActivity {
                 LiveManager.getInstance().reconnect();
             }
         });
+        findViewById(R.id.img_call_dis).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                LiveManager.getInstance().callDisconnect();
+            }
+        });
 
         imgPlay.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -110,7 +116,6 @@ public class ScreenActivity extends AppCompatActivity {
                             @Override
                             public void onDisConnect() {
                                 Log.d("LiveListener=>", "onDisConnect");
-
                             }
 
                             @Override

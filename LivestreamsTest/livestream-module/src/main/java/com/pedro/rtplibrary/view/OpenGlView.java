@@ -58,7 +58,7 @@ public class OpenGlView extends OpenGlViewBase {
 
     @Override
     public void init() {
-        if (!initialized) managerRender = new ManagerRender();
+        if (!initialized || managerRender==null) managerRender = new ManagerRender();
         managerRender.setCameraFlip(isFlipHorizontal, isFlipVertical);
         initialized = true;
     }

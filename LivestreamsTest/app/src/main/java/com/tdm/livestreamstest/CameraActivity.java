@@ -66,6 +66,7 @@ public class CameraActivity extends AppCompatActivity {
 //                        LiveManager.getInstance().start("rtmp://live.twitch.tv/app/live_926961558_dieFvvmelCjlO7ghTejMDm1WGXytCk");
 //                        LiveManager.getInstance().start("rtmp://live.ori2.vtc.vn:1935/origin2/f7d3966bc1244ad8ba658395bf1313b6");
                         LiveManager.getInstance().start("rtmp://live.twitch.tv/app/live_162311279_a2TQ6agKAohE6VyCuwFO6zq5xC74FJ");
+                        LiveManager.getInstance().start("rtmp://live.twitch.tv/app/live_162311279_a2TQ6agKAohE6VyCuwFO6zq5xC74FJ");
 
                     }
                 } else {
@@ -171,7 +172,7 @@ public class CameraActivity extends AppCompatActivity {
                         public void onPermissionDenied() {
 
                         }
-                    }, new LiveManager.PreviewSizeListener() {
+                    },true, new LiveManager.PreviewSizeListener() {
                         @Override
                         public void onPreviewSize(int width, int height) {
                             FullLog.LogD("onPreviewSize width: " + width + " -- " + "heigh: " + height);
@@ -222,16 +223,129 @@ public class CameraActivity extends AppCompatActivity {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
-
-
-                LiveManager.getInstance().setCameraFace(CameraFace.Front);
-
-
-//        LiveManager.getInstance().start("rtmp://live.twitch.tv/app/live_926961558_dieFvvmelCjlO7ghTejMDm1WGXytCk");
-        LiveManager.getInstance().start("rtmp://live.twitch.tv/app/live_162311279_a2TQ6agKAohE6VyCuwFO6zq5xC74FJ");
+//        LiveManager.getInstance().start("rtmp://live.twitch.tv/app/live_162311279_a2TQ6agKAohE6VyCuwFO6zq5xC74FJ");
+//
+//        for (int i = 0; i<20; i++){
+//            loopSetup.run();
+//        }
 
     }
+
+    Runnable loopSetup = new Runnable() {
+        @Override
+        public void run() {
+            LiveManager.getInstance().stopPreview();
+            LiveManager.getInstance().stop();
+
+            try {
+                LiveManager.getInstance().setup(CameraActivity.this, findViewById(R.id.view_screen), test,
+                        new LiveListener() {
+                            @Override
+                            public void onLiveStarting() {
+                                Log.d("LiveListener=>", "onLiveStarting");
+                            }
+
+                            @Override
+                            public void onLiveStarted() {
+                                Log.d("LiveListener=>", "onLiveStarted");
+                                imgPlay.setImageResource(R.drawable.ic_pause);
+
+                            }
+
+                            @Override
+                            public void onLiveError(Exception ex) {
+                                Log.d("LiveListener=>", "onLiveError " + ex);
+                                imgPlay.setImageResource(R.drawable.ic_play_arrow);
+                            }
+
+                            @Override
+                            public void onLiveStopped() {
+                                Log.d("LiveListener=>", "onLiveStopped");
+                                imgPlay.setImageResource(R.drawable.ic_play_arrow);
+                            }
+
+                            @Override
+                            public void onDisConnect() {
+
+                            }
+
+                            @Override
+                            public void onConnectFailed(Exception err) {
+
+                            }
+
+                            @Override
+                            public void onConnectionStarted() {
+                                Log.d("LiveListener=>", "onConnectionStarted");
+                            }
+
+                            @Override
+                            public void onNewBitrateReceived(long b) {
+                            }
+
+                            @Override
+                            public void onPermissionDenied() {
+
+                            }
+                        },true, new LiveManager.PreviewSizeListener() {
+                            @Override
+                            public void onPreviewSize(int width, int height) {
+                                FullLog.LogD("onPreviewSize width: " + width + " -- " + "heigh: " + height);
+
+                            }
+                        }, new OpenGlView.SurfaceListener() {
+                            @Override
+                            public void onCreated() {
+
+                            }
+
+                            @Override
+                            public void onDestroyed() {
+
+                            }
+
+                            @Override
+                            public void onChanged() {
+
+                            }
+
+                            @Override
+                            public void onError(Exception e) {
+                                FullLog.LogD("onRtmpConnecting");
+                            }
+
+                            @Override
+                            public void onSurfaceInvalid(Exception e) {
+
+                            }
+                        });
+
+
+//
+                LiveManager.getInstance().setSurfaceViewParams(Common.TypePivot.LEFT, 1080, 1000, 0, 0, 2000);
+
+//            Bitmap bitmap = ((BitmapDrawable) ContextCompat.getDrawable(this, R.drawable.okokoo)).getBitmap();
+//            LiveManager.getInstance().setWaitingImage(bitmap);
+//            Bitmap bitmap = getBitmapFromURL("https://cdn.pixabay.com/photo/2023/06/10/15/24/insect-8054262_1280.jpg");
+                /*         Glide.with(this).asBitmap().load(*//*"https://cdn.pixabay.com/photo/2023/06/10/15/24/insect-8054262_1280.jpg"*//*"https://imgtr.ee/images/2023/07/28/66ee28f55d70fe0167574c9205dfb2ca.jpeg").into(new SimpleTarget<Bitmap>() {
+                @Override
+                public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                    Bitmap bitmap = resource;
+                    LiveManager.getInstance().setWaitingImage(bitmap);
+                }
+            });*/
+
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    LiveManager.getInstance().start("rtmp://live.twitch.tv/app/live_162311279_a2TQ6agKAohE6VyCuwFO6zq5xC74FJ");
+                }
+            },2000);
+        }
+    };
 
 
     @Override
@@ -347,7 +461,7 @@ public class CameraActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
 //        LiveManager.getInstance().stopPreview();
-//        LiveManager.getInstance().stopPreview();
+        LiveManager.getInstance().stopPreview();
         LiveManager.getInstance().stop();
         super.onStop();
     }

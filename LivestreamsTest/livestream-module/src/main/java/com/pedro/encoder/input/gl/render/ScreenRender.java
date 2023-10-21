@@ -221,9 +221,6 @@ public class ScreenRender {
 
     public void draw(boolean enable, int width, int height, boolean keepAspectRatio) {
         GlUtil.checkGlError("drawScreen start");
-        FullLog.LogD("drawScreen start");
-
-
 
         PreviewSizeCalculator.calculateViewPort(keepAspectRatio, width, height, streamWidth,
                 streamHeight);

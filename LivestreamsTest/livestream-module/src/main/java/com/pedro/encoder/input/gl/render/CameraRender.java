@@ -76,7 +76,7 @@ public class CameraRender extends BaseRenderOffScreen {
 
     @Override
     public void draw() {
-        FullLog.LogD("drawCamera start");
+//        FullLog.LogD("drawCamera start");
 
         GlUtil.checkGlError("drawCamera start");
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, renderHandler.getFboId()[0]);

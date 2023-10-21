@@ -28,6 +28,7 @@ import com.pedro.encoder.video.GetVideoData;
 import com.pedro.encoder.video.VideoEncoder;
 import com.pedro.rtplibrary.view.GlInterface;
 import com.pedro.rtplibrary.view.OffScreenGlThread;
+import com.sigma.FullLog;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -233,6 +234,7 @@ public abstract class DisplayBase implements GetAacData, GetVideoData, GetMicrop
      *            RTMPS: rtmps://192.168.1.1:1935/live/pedroSG94
      */
     public void startStream(String url) {
+        FullLog.LogD("startStream " + url);
         streaming = true;
         if (!recordController.isRecording()) {
             startEncoders(resultCode, data);
@@ -242,7 +244,7 @@ public abstract class DisplayBase implements GetAacData, GetVideoData, GetMicrop
         startStreamRtp(url);
     }
 
-    public Intent getData(){
+    public Intent getData() {
         return data;
     }
 
@@ -263,6 +265,7 @@ public abstract class DisplayBase implements GetAacData, GetVideoData, GetMicrop
         }
         Surface surface =
                 (glInterface != null) ? glInterface.getSurface() : videoEncoder.getInputSurface();
+
 
         mediaProjection = mediaProjectionManager.getMediaProjection(resultCode, data);
         virtualDisplay = mediaProjection.createVirtualDisplay("Stream Display", videoEncoder.getWidth(),

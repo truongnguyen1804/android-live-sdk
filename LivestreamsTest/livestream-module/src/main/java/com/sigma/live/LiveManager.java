@@ -81,6 +81,11 @@ public class LiveManager {
 
     private boolean canPushDisconnect = true;
 
+    private static int STARTING = 1;
+    private static int STARTED = 2;
+    private static int STOPED = 3;
+    private int stateLive = 0;
+
     public void setOrientation(int orientation) {
         this.rotation = orientation;
         CameraHelper.setCameraOrientation(null, rotation);
@@ -91,12 +96,14 @@ public class LiveManager {
         public void onConnectingRtmp() {
             FullLog.LogD("ConnectCheckerRtmp: " + "onConnectingRtmp ");
             isConnecting = true;
+            stateLive = STARTING;
         }
 
         @Override
         public void onConnectionSuccessRtmp() {
             FullLog.LogD("ConnectCheckerRtmp: " + "onConnectionSuccessRtmp ");
             isConnecting = false;
+            stateLive = STARTED;
 
             if (mActivity != null)
                 mActivity.runOnUiThread(new Runnable() {
@@ -111,6 +118,7 @@ public class LiveManager {
         public void onConnectionFailedRtmp(final String reason) {
             FullLog.LogE("ConnectCheckerRtmp: " + "onConnectionFailedRtmp " + reason);
             isConnecting = false;
+            stateLive = STOPED;
             if (mActivity != null)
                 mActivity.runOnUiThread(new Runnable() {
                     @Override
@@ -118,12 +126,14 @@ public class LiveManager {
                         mListener.onLiveError(new Exception(reason));
                         mListener.onConnectFailed(new Exception(reason));
                         if (isCallStop) {
+                            FullLog.LogE("ConnectCheckerRtmp: " + "callStop");
                             stop();
                         } else {
                             if (canPushDisconnect) {
                                 canPushDisconnect = false;
                                 mListener.onDisConnect();
-                            }}
+                            }
+                        }
                     }
                 });
 //            if (isCallStop) {
@@ -135,6 +145,7 @@ public class LiveManager {
         public void onConnectionStartedRtmp(String s) {
             FullLog.LogE("ConnectCheckerRtmp: " + "onConnectionStartedRtmp ");
             isConnecting = false;
+            stateLive = STARTED;
             if (mActivity != null)
                 mActivity.runOnUiThread(new Runnable() {
                     @Override
@@ -148,6 +159,7 @@ public class LiveManager {
         public void onDisconnectRtmp() {
             FullLog.LogE("ConnectCheckerRtmp: " + "onDisconnectRtmp ");
             isConnecting = false;
+            stateLive = STOPED;
             if (mActivity != null)
                 mActivity.runOnUiThread(new Runnable() {
                     @Override
@@ -155,10 +167,10 @@ public class LiveManager {
                         if (isCallStop) {
                             mListener.onLiveStopped();
                         } else {
-//                            if (canPushDisconnect) {
-//                                canPushDisconnect = false;
-//                                mListener.onDisConnect();
-//                            }
+                            if (canPushDisconnect) {
+                                canPushDisconnect = false;
+                                mListener.onDisConnect();
+                            }
                         }
 
                     }
@@ -305,7 +317,7 @@ public class LiveManager {
     }
 
 
-    private void setupInternal(Activity activity, ViewGroup container, int[] paddings, LiveListener listener, boolean isCamera, PreviewSizeListener previewSizeListener, OpenGlView.SurfaceListener surfaceListener) throws Exception {
+    private void setupInternal(Activity activity, ViewGroup container, int[] paddings, LiveListener listener, boolean isCamera, boolean isFrontCam, PreviewSizeListener previewSizeListener, OpenGlView.SurfaceListener surfaceListener) throws Exception {
 
         if (isConnecting) {
             if (surfaceListener != null) {
@@ -321,12 +333,13 @@ public class LiveManager {
 
         if (mVideoSource != null && !(mVideoSource instanceof EmptySource)) {
             mVideoSource.stop();
+            mVideoSource.stopPreview();
             mVideoSource = null;
         }
         isSurfaceCreated = false;
         if (isCamera) {
             this.surfaceListener = surfaceListener;
-            mVideoSource = new CameraSource();
+            mVideoSource = new CameraSource(isFrontCam);
             isCallStop = true;
         } else {
             mVideoSource = new ScreenSource();
@@ -336,7 +349,7 @@ public class LiveManager {
         mVideoSource.setupInternal(activity, container, paddings);
         container.setKeepScreenOn(true);
         refresh();
-        if (previewSizeListener!=null){
+        if (previewSizeListener != null) {
             this.previewSizeListener = previewSizeListener;
             previewSizeListener.onPreviewSize(mWidth, mHeight);
         }
@@ -356,7 +369,7 @@ public class LiveManager {
             mVideoSource = null;
         }
         isSurfaceCreated = false;
-        isCallStop = true;
+        isCallStop = false;
         mVideoSource = new FileSource();
         mVideoSource.setupFileInternal(openGlView);
 //        container.setKeepScreenOn(true);
@@ -365,25 +378,26 @@ public class LiveManager {
         previewSizeListener.onPreviewSize(mWidth, mHeight);
     }
 
-    public void setup(Activity activity, ViewGroup container, int[] paddings, LiveListener listener, PreviewSizeListener previewSizeListener, OpenGlView.SurfaceListener surfaceListener) throws Exception {
-        if (checkPermission(activity, true)){
-            setupInternal(activity, container, paddings, listener, true, previewSizeListener, surfaceListener);
-        }else {
+    public void setup(Activity activity, ViewGroup container, int[] paddings, LiveListener listener, boolean isFrontCam, PreviewSizeListener previewSizeListener, OpenGlView.SurfaceListener surfaceListener) throws Exception {
+        if (checkPermission(activity, true)) {
+            setupInternal(activity, container, paddings, listener, true, isFrontCam, previewSizeListener, surfaceListener);
+        } else {
             listener.onPermissionDenied();
         }
     }
 
     public void setupScreenStream(Activity activity, ViewGroup container, LiveListener listener) throws Exception {
-        if (checkPermission(activity, false)){
-            setupInternal(activity, container, null, listener, false,null ,null );
-    }else {
+        if (checkPermission(activity, false)) {
+            setupInternal(activity, container, null, listener, false, false, null, null);
+        } else {
             listener.onPermissionDenied();
-        }}
+        }
+    }
 
     public void setupStreamFile(OpenGlView openGlView, Activity activity, ViewGroup container, LiveListener listener) throws Exception {
         if (checkPermission(activity, false)) {
             setupInternalFile(openGlView, activity, container, listener, null);
-        }else {
+        } else {
             listener.onPermissionDenied();
         }
     }
@@ -790,6 +804,15 @@ public class LiveManager {
         RtmpCamera1 mCamera;
         ViewGroup viewParent;
 
+        public CameraSource(boolean isFontCam) {
+            this.isFontCam = isFontCam;
+            if (isFontCam) {
+                mFace = CameraFace.Front;
+            } else {
+                mFace = CameraFace.Back;
+            }
+        }
+
         public RtmpCamera1 getmCamera() {
             return mCamera;
         }
@@ -852,7 +875,7 @@ public class LiveManager {
 
         @Override
         public void setCamera(CameraFace face) {
-            FullLog.LogD(TAG + " setCamera ");
+            FullLog.LogD(TAG + " setCamera, face " + face);
             if (mCamera != null) {
                 FullLog.LogD(TAG + " setCamera true");
 //                if (face == mFace) return;
@@ -920,7 +943,7 @@ public class LiveManager {
 
         @Override
         public void setupInternal(Activity activity, ViewGroup container, int[] paddings) throws Exception {
-            FullLog.LogD(TAG + " setupInternal");
+            FullLog.LogD(TAG + " setupInternal, cameraIsFront " + isFontCam);
             layoutParent = new MyViewGroup(activity);
             ViewGroup.LayoutParams layoutParamsParent = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
             layoutParent.setPadding((paddings != null && paddings.length > 0) ? paddings[0] : 0,
@@ -948,6 +971,7 @@ public class LiveManager {
             mOpenGlView.setKeepAspectRatio(true);
             mOpenGlView.getHolder().addCallback(mSurfaceCallback);
             mCamera = new RtmpCamera1(mOpenGlView, mConnectCheckRtmp);
+            mCamera.setCameraFace(isFontCam ? Camera.CameraInfo.CAMERA_FACING_FRONT : Camera.CameraInfo.CAMERA_FACING_BACK);
             mOpenGlView.post(new Runnable() {
                 @Override
                 public void run() {
@@ -966,32 +990,40 @@ public class LiveManager {
 
         @Override
         public void start() {
-            FullLog.LogD(TAG + " start");
-            if (mCamera != null && isSurfaceCreated) {
-                try {
-                    if (mCamera.prepareAudio(mResolution.getAudioBitrate(), 44100, false,
-                            true, true, true)
-                            && mCamera.prepareVideo(mWidth, mHeight, mCamera.getFps(), mResolution.getVideoBitrate(),
-                            false, CameraHelper.getCameraOrientation(mActivity)
-                            /*CameraHelper.chooseCameraOrientation(mActivity, 0)*/)) {
-                        FullLog.LogD("checkUrlLive:" + mUrl + " -- " + mWidth + " -- " + mHeight);
-                        mCamera.startStream(mUrl);
-                        mListener.onLiveStarting();
-                        printConfig();
-                        if (mLedEnable)
-                            setLedEnable(true);
-                        return;
-                    }
-                } catch (Exception ex) {
-                    mListener.onLiveError(ex);
-                    ex.printStackTrace();
-                    stop();
-                }
+            FullLog.LogD(TAG + " start, isFrontCam " + isFontCam);
+            if (stateLive == STARTING || stateLive == STARTED) {
+                mListener.onLiveError(new Exception("Can not start a stream when it's STARTING or STARTED"));
             } else {
-                if (surfaceListener != null) {
-                    surfaceListener.onSurfaceInvalid(new Exception("Can not start a stream camera when surface invalid"));
+                if (mCamera != null && isSurfaceCreated) {
+                    try {
+                        if (mCamera.prepareAudio(mResolution.getAudioBitrate(), 44100, false,
+                                true, true, true)
+                                && mCamera.prepareVideo(mWidth, mHeight, mCamera.getFps(), mResolution.getVideoBitrate(),
+                                false, CameraHelper.getCameraOrientation(mActivity)
+                                /*CameraHelper.chooseCameraOrientation(mActivity, 0)*/)) {
+                            FullLog.LogD("checkUrlLive:" + mUrl + " -- " + mWidth + " -- " + mHeight);
+                            mCamera.startStream(mUrl);
+                            mListener.onLiveStarting();
+                            stateLive = STARTING;
+                            printConfig();
+                            if (mLedEnable)
+                                setLedEnable(true);
+                            return;
+                        }
+                    } catch (Exception ex) {
+                        mListener.onLiveError(ex);
+                        ex.printStackTrace();
+                        stop();
+                    }
+                } else {
+                    if (surfaceListener != null) {
+                        surfaceListener.onSurfaceInvalid(new Exception("Can not start a stream camera when surface invalid"));
+
+                    }
                 }
             }
+
+
         }
 
         @Override
@@ -1023,7 +1055,7 @@ public class LiveManager {
 
         @Override
         public void stop() {
-            FullLog.LogD(TAG + " stop");
+            FullLog.LogD(TAG + " stop, isFrontCam " + isFontCam);
             if (mCamera != null && mCamera.isStreaming()) {
                 FullLog.LogD(TAG + " stop true");
                 mCamera.stopStream();
@@ -1112,7 +1144,7 @@ public class LiveManager {
         public void startPreview() {
             FullLog.LogD(TAG + " startPreview");
             if (mCamera != null) {
-                FullLog.LogD(TAG + " startPreview true");
+                FullLog.LogD(TAG + " startPreview true, isFrontCam " + isFontCam);
                 FullLog.LogD("startPreviewww: " + isFontCam);
                 mCamera.startPreview((isFontCam ? CameraFace.Front : CameraFace.Back).getValue()/*mFace.getValue()*/, mWidth, mHeight, mFps);
             }
@@ -1120,7 +1152,7 @@ public class LiveManager {
 
         @Override
         public void stopPreview() {
-            FullLog.LogD(TAG + " stopPreview");
+            FullLog.LogD(TAG + " stopPreview, isFrontCam " + isFontCam);
             if (mCamera != null)
                 mCamera.stopPreview();
         }
@@ -1322,7 +1354,7 @@ public class LiveManager {
         public void onStart(int resultCode, Intent data) {
             try {
                 mDisplay.setIntentResult(resultCode, data);
-                isCallStop = true;
+//                isCallStop = true;
                 if (mDisplay.prepareAudio(mResolution.getAudioBitrate(), 48000, false,
                         true, true, true)
                         && mDisplay.prepareVideo(mWidth, mHeight, mFps, mResolution.getVideoBitrate(), false, 0, 320)) {
@@ -1353,13 +1385,13 @@ public class LiveManager {
 
         public void startLive() {
             if (mDisplay != null && mListener != null) {
-                if (mDisplay.getData()!=null){
+                if (mDisplay.getData() != null) {
                     canPushDisconnect = true;
                     mDisplay.startStream(mUrl);
                     mListener.onLiveStarting();
                     showNotification();
                     printConfig();
-                }else {
+                } else {
                     Intent intent = new Intent(mActivity, SigmaService.class);
                     mActivity.stopService(intent);
                     mListener.onPermissionDenied();

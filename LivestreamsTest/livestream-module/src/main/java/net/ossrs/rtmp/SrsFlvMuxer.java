@@ -312,10 +312,10 @@ public class SrsFlvMuxer {
                             try {
                                 SrsFlvFrame frame = mFlvTagCache.poll(1, TimeUnit.SECONDS);
                                 if (frame == null) {
-                                    Log.i(TAG, "Skipping iteration, frame null");
+                                    FullLog.LogD(TAG+ " Skipping iteration, frame null");
                                     continue;
                                 }
-                                Log.d(TAG, "Skipping iteration, frame not null");
+                                FullLog.LogD(TAG+ "Skipping iteration, frame not null");
                                 if (frame.is_sequenceHeader()) {
                                     if (frame.is_video()) {
                                         mVideoSequenceHeader = frame;
@@ -1052,7 +1052,7 @@ public class SrsFlvMuxer {
 
         private void flvFrameCacheAdd(SrsFlvFrame frame) {
             try {
-                Log.d(TAG, "flvFrameCacheAdd: " + mFlvTagCache.size() + "");
+//                Log.d(TAG, "flvFrameCacheAdd: " + mFlvTagCache.size() + "");
                 BitrateControl.getInstance().update(mFlvTagCache.size());
                 mFlvTagCache.add(frame);
                 notifyDiscarded(0);
