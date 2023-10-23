@@ -991,6 +991,8 @@ public class LiveManager {
         @Override
         public void start() {
             FullLog.LogD(TAG + " start, isFrontCam " + isFontCam);
+            if (mListener == null)
+                return;
             if (stateLive == STARTING || stateLive == STARTED) {
                 mListener.onLiveError(new Exception("Can not start a stream when it's STARTING or STARTED"));
             } else {
@@ -1352,6 +1354,9 @@ public class LiveManager {
 
         @Override
         public void onStart(int resultCode, Intent data) {
+            if (mListener == null) {
+                return;
+            }
             try {
                 mDisplay.setIntentResult(resultCode, data);
 //                isCallStop = true;
@@ -1365,6 +1370,8 @@ public class LiveManager {
                     Intent intent = new Intent(mActivity, SigmaService.class);
                     mActivity.startService(intent);
 
+                } else {
+                    mListener.onLiveError(new Exception("prepareAudio is error!"));
                 }
             } catch (Exception ex) {
                 mListener.onLiveError(ex);
@@ -1402,6 +1409,9 @@ public class LiveManager {
 
         @Override
         public void reconnect() {
+            if (mListener == null) {
+                return;
+            }
             if (mDisplay != null && mActivity != null) {
                 try {
                     mDisplay.restartStream();
@@ -1423,8 +1433,11 @@ public class LiveManager {
 
 
                 } catch (Exception ex) {
+                    mListener.onLiveError(ex);
                     ex.printStackTrace();
                 }
+            } else {
+                mListener.onLiveError(new Exception("Cannot reconnect when mDisplay or mActivity is null"));
             }
 
         }
