@@ -48,10 +48,20 @@ public class SigmaService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if((LiveManager.ScreenSource) LiveManager.mVideoSource!=null){
-            ((LiveManager.ScreenSource) LiveManager.mVideoSource).startLive();
-        }
+//        if ((LiveManager.ScreenSource) LiveManager.mVideoSource != null) {
+//            ((LiveManager.ScreenSource) LiveManager.mVideoSource).startLive();
+//        }
+//        keepAliveTrick();
         return START_STICKY;
     }
+
+    @Override
+    public boolean stopService(Intent name) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            this.stopForeground(Service.STOP_FOREGROUND_REMOVE);
+        }
+        return super.stopService(name);
+    }
+
 }
 

@@ -315,7 +315,7 @@ public class SrsFlvMuxer {
                                     FullLog.LogD(TAG+ " Skipping iteration, frame null");
                                     continue;
                                 }
-                                FullLog.LogD(TAG+ "Skipping iteration, frame not null");
+//                                FullLog.LogD(TAG+ "Skipping iteration, frame not null");
                                 if (frame.is_sequenceHeader()) {
                                     if (frame.is_video()) {
                                         mVideoSequenceHeader = frame;
@@ -1057,7 +1057,7 @@ public class SrsFlvMuxer {
                 mFlvTagCache.add(frame);
                 notifyDiscarded(0);
             } catch (IllegalStateException e) {
-                Log.e(TAG, "flvFrameCacheAdd: IllegalStateException " + e.getMessage() + "");
+//                Log.e(TAG, "flvFrameCacheAdd: IllegalStateException " + e.getMessage() + "");
                 notifyDiscarded(1);
                 if (frame.is_video()) {
                     mDroppedVideoFrames++;

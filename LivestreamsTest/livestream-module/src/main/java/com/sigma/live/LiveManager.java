@@ -132,6 +132,7 @@ public class LiveManager {
                             if (canPushDisconnect) {
                                 canPushDisconnect = false;
                                 mListener.onDisConnect();
+//                                reStartConnect(3000);
                             }
                         }
                     }
@@ -170,6 +171,7 @@ public class LiveManager {
                             if (canPushDisconnect) {
                                 canPushDisconnect = false;
                                 mListener.onDisConnect();
+//                                reStartConnect(3000);
                             }
                         }
 
@@ -1354,30 +1356,48 @@ public class LiveManager {
 
         @Override
         public void onStart(int resultCode, Intent data) {
+            FullLog.LogD(TAG + " onStart " + resultCode);
             if (mListener == null) {
                 return;
             }
-            try {
-                mDisplay.setIntentResult(resultCode, data);
-//                isCallStop = true;
-                if (mDisplay.prepareAudio(mResolution.getAudioBitrate(), 48000, false,
-                        true, true, true)
-                        && mDisplay.prepareVideo(mWidth, mHeight, mFps, mResolution.getVideoBitrate(), false, 0, 320)) {
-                    if (isMyServiceRunning(SigmaService.class, mActivity)) {
-                        Intent intent = new Intent(mActivity, SigmaService.class);
-                        mActivity.stopService(intent);
-                    }
-                    Intent intent = new Intent(mActivity, SigmaService.class);
-                    mActivity.startService(intent);
+            if (stateLive == STARTING || stateLive == STARTED) {
+                mListener.onLiveError(new Exception("Can not start a stream when it's STARTING or STARTED"));
+            } else {
+                try {
+                    mDisplay.setIntentResult(resultCode, data);
+                    isCallStop = false;
+                    if (mDisplay.prepareAudio(mResolution.getAudioBitrate(), 48000, false,
+                            true, true, true)
+                            && mDisplay.prepareVideo(mWidth, mHeight, mFps, mResolution.getVideoBitrate(), false, 0, 320)) {
+                        if (isMyServiceRunning(SigmaService.class, mActivity)) {
+                            Intent intent = new Intent(mActivity, SigmaService.class);
+                            mActivity.stopService(intent);
+                        }
 
-                } else {
-                    mListener.onLiveError(new Exception("prepareAudio is error!"));
+                        Intent intent = new Intent(mActivity, SigmaService.class);
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            mActivity.startService(intent);
+                        } else {
+                            mActivity.startService(intent);
+                        }
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                startLive();
+                            }
+                        }, 2000);
+
+
+                    } else {
+                        mListener.onLiveError(new Exception("prepareAudio is error!"));
+                    }
+                } catch (Exception ex) {
+                    mListener.onLiveError(ex);
+                    ex.printStackTrace();
+                    stop();
                 }
-            } catch (Exception ex) {
-                mListener.onLiveError(ex);
-                ex.printStackTrace();
-                stop();
             }
+
         }
 
         @Override
@@ -1394,6 +1414,7 @@ public class LiveManager {
             if (mDisplay != null && mListener != null) {
                 if (mDisplay.getData() != null) {
                     canPushDisconnect = true;
+                    stateLive = STARTING;
                     mDisplay.startStream(mUrl);
                     mListener.onLiveStarting();
                     showNotification();
@@ -1409,14 +1430,21 @@ public class LiveManager {
 
         @Override
         public void reconnect() {
+            isCallStop = false;
             if (mListener == null) {
+                return;
+            }
+            FullLog.LogD(TAG + " reconnect ");
+            if (stateLive == STARTING || stateLive == STARTED) {
+                mListener.onLiveError(new Exception("Can not start a stream when it's STARTING or STARTED"));
                 return;
             }
             if (mDisplay != null && mActivity != null) {
                 try {
                     mDisplay.restartStream();
-                    Intent intent = new Intent(mActivity, SigmaService.class);
-                    mActivity.stopService(intent);
+//                    Intent intent = new Intent(mActivity, SigmaService.class);
+//                    mActivity.stopService(intent);
+
 
                     Handler handlers = new Handler();
                     handlers.postDelayed(new Runnable() {
@@ -1425,8 +1453,20 @@ public class LiveManager {
                             if (mDisplay.prepareAudio(mResolution.getAudioBitrate(), 48000, false,
                                     true, true, true)
                                     && mDisplay.prepareVideo(mWidth, mHeight, mFps, mResolution.getVideoBitrate(), false, 0, 320)) {
-                                Intent intent = new Intent(mActivity, SigmaService.class);
-                                mActivity.startService(intent);
+
+                                startLive();
+
+//                                mActivity.runOnUiThread(new Runnable() {
+//                                    @Override
+//                                    public void run() {
+//                                        Intent intent = new Intent(mActivity, SigmaService.class);
+//                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//                                            mActivity.startService(intent);
+//                                        } else {
+//                                            mActivity.startService(intent);
+//                                        }
+//                                    }
+//                                });
                             }
                         }
                     }, 3000);
@@ -1444,20 +1484,26 @@ public class LiveManager {
 
         @Override
         public void stop() {
+            FullLog.LogD(TAG + " stop ");
+
             if (mDisplay != null)
                 try {
-                    FullLog.LogD("SrsFlvMuxer: " + "stop screen");
+                    FullLog.LogD(TAG + " SrsFlvMuxer: stop screen");
                     hideNotification();
+                    isCallStop = true;
                     mDisplay.stopStream();
                     Intent intent = new Intent(mActivity, SigmaService.class);
                     mActivity.stopService(intent);
+
                 } catch (Exception ex) {
+                    mListener.onLiveError(new Exception("Stop stream error"));
                     ex.printStackTrace();
                 }
         }
 
         @Override
         public void callDisconnect() {
+            FullLog.LogD(TAG + " callDisconnect ");
             if (mDisplay != null && mActivity != null) {
                 try {
                     mDisplay.restartStream();
@@ -1465,6 +1511,7 @@ public class LiveManager {
                     mActivity.stopService(intent);
 
                 } catch (Exception ignored) {
+                    mListener.onLiveError(new Exception("Can not reconnect " + ignored.getMessage()));
                 }
             }
         }
