@@ -10,7 +10,7 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.FLASHLIGHT" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
 
 
     <uses-feature android:name="android.hardware.camera" />
@@ -24,20 +24,22 @@
         android:supportsRtl="true">
         <service
             android:name=".SigmaService"
-            android:foregroundServiceType="mediaProjection"
-            tools:targetApi="q"
             android:enabled="true"
-            android:exported="false"/>
+            android:exported="false"
+            android:foregroundServiceType="mediaProjection"
+            tools:targetApi="q" />
 
         <receiver
             android:name="NetworkChangeReceiver"
-            android:label="NetworkChangeReceiver"
-            android:exported="true">
+            android:exported="true"
+            android:label="NetworkChangeReceiver">
             <intent-filter>
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
                 <action android:name="android.net.wifi.WIFI_STATE_CHANGED" />
             </intent-filter>
         </receiver>
+
+
     </application>
 
 </manifest>

@@ -58,7 +58,6 @@ public class ScreenActivity extends AppCompatActivity {
                 } else {
                     Toast.makeText(ScreenActivity.this, "Cần cấp quyền", Toast.LENGTH_LONG).show();
                 }
-
             }
         });
         imgMic.setOnClickListener(new View.OnClickListener() {

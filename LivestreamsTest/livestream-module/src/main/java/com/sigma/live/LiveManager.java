@@ -85,6 +85,7 @@ public class LiveManager {
     private static int STARTED = 2;
     private static int STOPED = 3;
     private int stateLive = 0;
+    Handler handlers = new Handler();
 
     public void setOrientation(int orientation) {
         this.rotation = orientation;
@@ -235,8 +236,6 @@ public class LiveManager {
                     handler.postDelayed(runnable, timeDelay);
                 }
             });
-
-
         }
     }
 
@@ -327,6 +326,10 @@ public class LiveManager {
             }
             return;
         }
+//        AppCloseReceiver appCloseReceiver = new AppCloseReceiver();
+//        IntentFilter intentFilter = new IntentFilter(Intent.ACTION_PACKAGE_REMOVED);
+//        intentFilter.addDataScheme("package");
+//        activity.registerReceiver(appCloseReceiver, intentFilter);
 
         mValidator = new LiveValidator(activity.getPackageName());
         mActivity = activity;
@@ -1364,33 +1367,12 @@ public class LiveManager {
                 mListener.onLiveError(new Exception("Can not start a stream when it's STARTING or STARTED"));
             } else {
                 try {
+                    stateLive = STARTING;
                     mDisplay.setIntentResult(resultCode, data);
                     isCallStop = false;
-                    if (mDisplay.prepareAudio(mResolution.getAudioBitrate(), 48000, false,
-                            true, true, true)
-                            && mDisplay.prepareVideo(mWidth, mHeight, mFps, mResolution.getVideoBitrate(), false, 0, 320)) {
-                        if (isMyServiceRunning(SigmaService.class, mActivity)) {
-                            Intent intent = new Intent(mActivity, SigmaService.class);
-                            mActivity.stopService(intent);
-                        }
+                    handlers.removeCallbacks(runnablePrepare);
+                    handlers.postDelayed(runnablePrepare, 2000);
 
-                        Intent intent = new Intent(mActivity, SigmaService.class);
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            mActivity.startService(intent);
-                        } else {
-                            mActivity.startService(intent);
-                        }
-                        new Handler().postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                startLive();
-                            }
-                        }, 2000);
-
-
-                    } else {
-                        mListener.onLiveError(new Exception("prepareAudio is error!"));
-                    }
                 } catch (Exception ex) {
                     mListener.onLiveError(ex);
                     ex.printStackTrace();
@@ -1442,34 +1424,12 @@ public class LiveManager {
             if (mDisplay != null && mActivity != null) {
                 try {
                     mDisplay.restartStream();
-//                    Intent intent = new Intent(mActivity, SigmaService.class);
-//                    mActivity.stopService(intent);
+                    Intent intent = new Intent(mActivity, SigmaService.class);
+                    mActivity.stopService(intent);
 
-
-                    Handler handlers = new Handler();
-                    handlers.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (mDisplay.prepareAudio(mResolution.getAudioBitrate(), 48000, false,
-                                    true, true, true)
-                                    && mDisplay.prepareVideo(mWidth, mHeight, mFps, mResolution.getVideoBitrate(), false, 0, 320)) {
-
-                                startLive();
-
-//                                mActivity.runOnUiThread(new Runnable() {
-//                                    @Override
-//                                    public void run() {
-//                                        Intent intent = new Intent(mActivity, SigmaService.class);
-//                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//                                            mActivity.startService(intent);
-//                                        } else {
-//                                            mActivity.startService(intent);
-//                                        }
-//                                    }
-//                                });
-                            }
-                        }
-                    }, 3000);
+                    stateLive = STARTING;
+                    handlers.removeCallbacks(runnablePrepare);
+                    handlers.postDelayed(runnablePrepare, 2000);
 
 
                 } catch (Exception ex) {
@@ -1479,13 +1439,43 @@ public class LiveManager {
             } else {
                 mListener.onLiveError(new Exception("Cannot reconnect when mDisplay or mActivity is null"));
             }
-
         }
+
+        Runnable runnablePrepare = new Runnable() {
+            @Override
+            public void run() {
+                if (mDisplay == null || mResolution == null || mActivity == null || mListener == null) {
+                    return;
+                }
+                if (mDisplay.prepareAudio(mResolution.getAudioBitrate(), 48000, false,
+                        true, true, true)
+                        && mDisplay.prepareVideo(mWidth, mHeight, mFps, mResolution.getVideoBitrate(), false, 0, 320)) {
+
+                    if (isMyServiceRunning(SigmaService.class, mActivity)) {
+                        Intent intent = new Intent(mActivity, SigmaService.class);
+                        mActivity.stopService(intent);
+                    }
+
+                    Intent intent = new Intent(mActivity, SigmaService.class);
+                    mActivity.startService(intent);
+                    handlers.removeCallbacks(runnableStartLive);
+                    handlers.postDelayed(runnableStartLive, 1000);
+                } else {
+                    mListener.onLiveError(new Exception("prepareAudio is error!"));
+                }
+            }
+        };
+
+        Runnable runnableStartLive = new Runnable() {
+            @Override
+            public void run() {
+                startLive();
+            }
+        };
 
         @Override
         public void stop() {
             FullLog.LogD(TAG + " stop ");
-
             if (mDisplay != null)
                 try {
                     FullLog.LogD(TAG + " SrsFlvMuxer: stop screen");

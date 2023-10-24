@@ -10,6 +10,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -25,6 +26,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.pedro.rtplibrary.rtmp.RtmpCamera1;
 import com.pedro.rtplibrary.view.OpenGlView;
 import com.sigma.FullLog;
+import com.sigma.live.AppCloseReceiver;
 import com.sigma.live.LiveListener;
 import com.sigma.live.LiveManager;
 import com.sigma.live.SigmaService;
@@ -126,6 +128,7 @@ public class MainActivity extends AppCompatActivity {
 //            }
 //
 //        }
+//        appCloseReceiver = new AppCloseReceiver();
     }
 
     public static boolean checkPermission(Activity activity) {
@@ -149,9 +152,7 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.RECORD_AUDIO}, 100);
         } else if (ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.CAMERA}, 100);
-        } /* else if (ContextCompat.checkSelfPermission(activity, Manifest.permission.MANAGE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.MANAGE_EXTERNAL_STORAGE}, 100);
-        }*/ else if (ContextCompat.checkSelfPermission(activity, Manifest.permission.READ_MEDIA_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+        } else if (ContextCompat.checkSelfPermission(activity, Manifest.permission.READ_MEDIA_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.READ_MEDIA_AUDIO}, 100);
         } else if (ContextCompat.checkSelfPermission(activity, Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.READ_MEDIA_IMAGES}, 100);
@@ -188,5 +189,24 @@ public class MainActivity extends AppCompatActivity {
                 FullLog.LogD("not ok");
             }
         }
+    }
+
+    AppCloseReceiver appCloseReceiver;
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Intent intent = new Intent(this, SigmaService.class);
+        startService(intent);
+//
+//        IntentFilter intentFilter = new IntentFilter(Intent.ACTION_PACKAGE_REMOVED);
+//        intentFilter.addDataScheme("package");
+//        registerReceiver(appCloseReceiver, intentFilter);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+//        unregisterReceiver(appCloseReceiver);
     }
 }
