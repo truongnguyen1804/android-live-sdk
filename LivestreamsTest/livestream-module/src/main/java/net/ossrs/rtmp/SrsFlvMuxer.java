@@ -258,7 +258,7 @@ public class SrsFlvMuxer {
         Log.i(TAG, "sendFlvTag: 2 " + connected + " -- " + frame);
         SigmaMonitor.track(frame.flvTag.size(), frame.is_video());
         if (frame.is_video()) {
-            Log.i(TAG, "sendFlvTag: 3 " + connected + " -- " + frame);
+
             frameCount++;
             if (frame.is_keyframe()) {
                 if (frameCount > 1) {

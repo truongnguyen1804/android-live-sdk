@@ -25,6 +25,7 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
+import com.pedro.encoder.input.video.Camera1ApiManager;
 import com.pedro.encoder.input.video.CameraHelper;
 import com.pedro.rtplibrary.rtmp.RtmpCamera1;
 import com.pedro.rtplibrary.rtmp.RtmpDisplay;
@@ -50,21 +51,13 @@ import javax.crypto.spec.SecretKeySpec;
 
 public class LiveManager {
     private static LiveManager mInstance = new LiveManager();
-    private final String[] CAMERA_PERMISSIONS = {
-            Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA
-    };
-    private final String[] SCREEN_PERMISSIONS = {
-            Manifest.permission.RECORD_AUDIO
-    };
-    private List<Resolution> mResolutions = Arrays.asList(
-            Resolution.SSD,
-            Resolution.SD,
-            Resolution.HD,
-            Resolution.FULLHD
-    );
+    private static int width = 0, height = 0, bitrate = 0, fps = 0;
+    private final String[] CAMERA_PERMISSIONS = {Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA};
+    private final String[] SCREEN_PERMISSIONS = {Manifest.permission.RECORD_AUDIO};
+    private List<Resolution> mResolutions = Arrays.asList(Resolution.SSD15, Resolution.SD15, Resolution.HD15, Resolution.FULLHD15, Resolution.SSD25, Resolution.SD25, Resolution.HD25, Resolution.FULLHD25, Resolution.SSD30, Resolution.SD30, Resolution.HD30, Resolution.FULLHD30, Resolution.SSD50, Resolution.SD50, Resolution.HD50, Resolution.FULLHD50, Resolution.SSD60, Resolution.SD60, Resolution.HD60, Resolution.FULLHD60);
 
     private String TAG = "live_manager";
-    private Resolution mResolution = Resolution.HD;
+    private Resolution mResolution = Resolution.FULLHD30;
     private Activity mActivity;
     private LiveListener mListener;
     private String mUrl;
@@ -106,13 +99,12 @@ public class LiveManager {
             isConnecting = false;
             stateLive = STARTED;
 
-            if (mActivity != null)
-                mActivity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mListener.onLiveStarted();
-                    }
-                });
+            if (mActivity != null) mActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mListener.onLiveStarted();
+                }
+            });
         }
 
         @Override
@@ -120,24 +112,23 @@ public class LiveManager {
             FullLog.LogE("ConnectCheckerRtmp: " + "onConnectionFailedRtmp " + reason);
             isConnecting = false;
             stateLive = STOPED;
-            if (mActivity != null)
-                mActivity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mListener.onLiveError(new Exception(reason));
-                        mListener.onConnectFailed(new Exception(reason));
-                        if (isCallStop) {
-                            FullLog.LogE("ConnectCheckerRtmp: " + "callStop");
-                            stop();
-                        } else {
-                            if (canPushDisconnect) {
-                                canPushDisconnect = false;
-                                mListener.onDisConnect();
+            if (mActivity != null) mActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mListener.onLiveError(new Exception(reason));
+                    mListener.onConnectFailed(new Exception(reason));
+                    if (isCallStop) {
+                        FullLog.LogE("ConnectCheckerRtmp: " + "callStop");
+                        stop();
+                    } else {
+                        if (canPushDisconnect) {
+                            canPushDisconnect = false;
+                            mListener.onDisConnect();
 //                                reStartConnect(3000);
-                            }
                         }
                     }
-                });
+                }
+            });
 //            if (isCallStop) {
 //                stop();
 //            }
@@ -148,13 +139,12 @@ public class LiveManager {
             FullLog.LogE("ConnectCheckerRtmp: " + "onConnectionStartedRtmp ");
             isConnecting = false;
             stateLive = STARTED;
-            if (mActivity != null)
-                mActivity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mListener.onConnectionStarted();
-                    }
-                });
+            if (mActivity != null) mActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mListener.onConnectionStarted();
+                }
+            });
         }
 
         @Override
@@ -162,35 +152,33 @@ public class LiveManager {
             FullLog.LogE("ConnectCheckerRtmp: " + "onDisconnectRtmp ");
             isConnecting = false;
             stateLive = STOPED;
-            if (mActivity != null)
-                mActivity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (isCallStop) {
-                            mListener.onLiveStopped();
-                        } else {
-                            if (canPushDisconnect) {
-                                canPushDisconnect = false;
-                                mListener.onDisConnect();
+            if (mActivity != null) mActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (isCallStop) {
+                        mListener.onLiveStopped();
+                    } else {
+                        if (canPushDisconnect) {
+                            canPushDisconnect = false;
+                            mListener.onDisConnect();
 //                                reStartConnect(3000);
-                            }
                         }
-
                     }
-                });
+
+                }
+            });
         }
 
         @Override
         public void onAuthErrorRtmp() {
             FullLog.LogE("ConnectCheckerRtmp: " + "onAuthErrorRtmp ");
             isConnecting = false;
-            if (mActivity != null)
-                mActivity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mListener.onLiveError(new Exception("Can't authen"));
-                    }
-                });
+            if (mActivity != null) mActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mListener.onLiveError(new Exception("Can't authen"));
+                }
+            });
         }
 
         @Override
@@ -203,16 +191,14 @@ public class LiveManager {
         @Override
         public void onNewBitrateRtmp(long bitrate) {
             FullLog.LogE("ConnectCheckerRtmp: " + "onNewBitrateRtmp " + bitrate);
-            if (mActivity != null)
-                mActivity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mListener.onNewBitrateReceived(bitrate);
-                    }
-                });
+            if (mActivity != null) mActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mListener.onNewBitrateReceived(bitrate);
+                }
+            });
             try {
-                if (mVideoSource != null)
-                    mVideoSource.updateBitrate((int) bitrate);
+                if (mVideoSource != null) mVideoSource.updateBitrate((int) bitrate);
                 FullLog.LogD("SigmaLive", "Current bitrate: " + bitrate + "/" + SigmaMonitor.getInfo().mBitrate);
             } catch (Exception ex) {
                 ex.printStackTrace();
@@ -375,7 +361,7 @@ public class LiveManager {
         }
         isSurfaceCreated = false;
         isCallStop = false;
-        mVideoSource = new FileSource();
+//        mVideoSource = new FileSource();
         mVideoSource.setupFileInternal(openGlView);
 //        container.setKeepScreenOn(true);
         refresh();
@@ -397,6 +383,17 @@ public class LiveManager {
         } else {
             listener.onPermissionDenied();
         }
+    }
+
+
+    public void setInfoLive(int width, int height, int bitrate, int fps) {
+//        if (mVideoSource != null) {
+//            mVideoSource.setInfoLive(width, height, bitrate, fps);
+//        }
+        this.width = width;
+        this.height = height;
+        this.bitrate = bitrate;
+        this.fps = fps;
     }
 
     public void setupStreamFile(OpenGlView openGlView, Activity activity, ViewGroup container, LiveListener listener) throws Exception {
@@ -450,31 +447,26 @@ public class LiveManager {
     }
 
     public void switchCameraFace() {
-        if (mVideoSource != null)
-            mVideoSource.switchCameraFace();
+        if (mVideoSource != null) mVideoSource.switchCameraFace();
     }
 
     public CameraFace getCameraFace() {
-        if (mVideoSource != null)
-            return mVideoSource.getCameraFace();
+        if (mVideoSource != null) return mVideoSource.getCameraFace();
         return null;
     }
 
     public Camera getCamera() {
-        if (mVideoSource != null)
-            return mVideoSource.getCamera();
+        if (mVideoSource != null) return mVideoSource.getCamera();
         return null;
     }
 
     public RtmpCamera1 getMCamera() {
-        if (mVideoSource != null)
-            return mVideoSource.getmCamera();
+        if (mVideoSource != null) return mVideoSource.getmCamera();
         return null;
     }
 
     public void setCameraFace(CameraFace face) {
-        if (mVideoSource != null)
-            mVideoSource.setCamera(face);
+        if (mVideoSource != null) mVideoSource.setCamera(face);
     }
 
     @TargetApi(23)
@@ -482,8 +474,7 @@ public class LiveManager {
         if (Build.VERSION.SDK_INT < 23) return true;
         String[] needs = camera ? CAMERA_PERMISSIONS : SCREEN_PERMISSIONS;
         for (String permission : needs) {
-            if (activity.checkSelfPermission(permission)
-                    != PackageManager.PERMISSION_GRANTED) {
+            if (activity.checkSelfPermission(permission) != PackageManager.PERMISSION_GRANTED) {
                 return false;
             }
         }
@@ -517,20 +508,17 @@ public class LiveManager {
     }
 
     public boolean setLedEnable(boolean enable) {
-        if (mVideoSource != null)
-            return mVideoSource.setLedEnable(enable);
+        if (mVideoSource != null) return mVideoSource.setLedEnable(enable);
         return false;
     }
 
     public boolean isLedEnable() {
-        if (mVideoSource != null)
-            return mVideoSource.isLedEnable();
+        if (mVideoSource != null) return mVideoSource.isLedEnable();
         return false;
     }
 
     public void startPreview() {
-        if (mVideoSource != null)
-            mVideoSource.startPreview();
+        if (mVideoSource != null) mVideoSource.startPreview();
     }
 
     public boolean isFontCam() {
@@ -541,8 +529,7 @@ public class LiveManager {
     }
 
     public void stopPreview() {
-        if (mVideoSource != null)
-            mVideoSource.stopPreview();
+        if (mVideoSource != null) mVideoSource.stopPreview();
     }
 
     private void refresh() {
@@ -558,13 +545,11 @@ public class LiveManager {
     }
 
     private void start() {
-        if (mVideoSource != null)
-            mVideoSource.start();
+        if (mVideoSource != null) mVideoSource.start();
     }
 
     public void pause(Boolean b) {
-        if (mVideoSource != null)
-            mVideoSource.onPause(b);
+        if (mVideoSource != null) mVideoSource.onPause(b);
         return;
     }
 
@@ -578,8 +563,7 @@ public class LiveManager {
     public void stop() {
         FullLog.LogD("SrsFlvMuxer: " + "stop");
         isCallStop = true;
-        if (mVideoSource != null && mVideoSource.isRunning())
-            mVideoSource.stop();
+        if (mVideoSource != null && mVideoSource.isRunning()) mVideoSource.stop();
 //        if (mListener != null) {
 //            mListener.onLiveStopped();
 //        }
@@ -589,51 +573,43 @@ public class LiveManager {
         FullLog.LogD("SrsFlvMuxer: " + "callDisconnect");
 
         isCallStop = false;
-        if (mVideoSource != null)
-            mVideoSource.callDisconnect();
+        if (mVideoSource != null) mVideoSource.callDisconnect();
 
     }
 
 
     public boolean isRunning() {
-        if (mVideoSource != null)
-            return mVideoSource.isRunning();
+        if (mVideoSource != null) return mVideoSource.isRunning();
         return false;
     }
 
     public boolean isOnPreview() {
-        if (mVideoSource != null)
-            return mVideoSource.isOnPreview();
+        if (mVideoSource != null) return mVideoSource.isOnPreview();
         return false;
     }
 
     public boolean isAudioEnable() {
-        if (mVideoSource != null)
-            return mVideoSource.isAudioEnable();
+        if (mVideoSource != null) return mVideoSource.isAudioEnable();
         return false;
     }
 
     public void setAudioEnable(boolean enable) {
-        if (mVideoSource != null)
-            mVideoSource.setAudioEnable(enable);
+        if (mVideoSource != null) mVideoSource.setAudioEnable(enable);
         return;
     }
 
     public boolean isVideoEnable() {
-        if (mVideoSource != null)
-            return mVideoSource.isVideoEnable();
+        if (mVideoSource != null) return mVideoSource.isVideoEnable();
         return false;
     }
 
     public void setVideoEnable(boolean enable) {
-        if (mVideoSource != null)
-            mVideoSource.setVideoEnable(enable);
+        if (mVideoSource != null) mVideoSource.setVideoEnable(enable);
         return;
     }
 
     public void captureImage(final ImageCaptureListener listener) {
-        if (mVideoSource != null)
-            mVideoSource.captureImage(listener);
+        if (mVideoSource != null) mVideoSource.captureImage(listener);
     }
 
     public TrackInfo getTrackInfo() {
@@ -670,8 +646,7 @@ public class LiveManager {
             try {
                 String streamId = url.substring(url.lastIndexOf('/') + 1);
                 int markIndex = streamId.indexOf("?");
-                if (markIndex > 0)
-                    streamId = streamId.substring(0, markIndex);
+                if (markIndex > 0) streamId = streamId.substring(0, markIndex);
                 int index = streamId.indexOf('-');
                 String publicId = streamId.substring(0, index);
                 String target = streamId.substring(index + 1);
@@ -692,8 +667,7 @@ public class LiveManager {
                 StringBuilder hexString = new StringBuilder();
                 for (byte aMessageDigest : messageDigest) {
                     String h = Integer.toHexString(0xFF & aMessageDigest);
-                    while (h.length() < 2)
-                        h = "0" + h;
+                    while (h.length() < 2) h = "0" + h;
                     hexString.append(h);
                 }
                 return hexString.toString();
@@ -705,11 +679,7 @@ public class LiveManager {
     }
 
     private void showNotification() {
-        Notification.Builder notificationBuilder =
-                new Notification.Builder(mActivity).setSmallIcon(R.drawable.notification_anim)
-                        .setContentTitle("Streaming")
-                        .setContentText("Display mode stream")
-                        .setTicker("Stream in progress");
+        Notification.Builder notificationBuilder = new Notification.Builder(mActivity).setSmallIcon(R.drawable.notification_anim).setContentTitle("Streaming").setContentText("Display mode stream").setTicker("Stream in progress");
         notificationBuilder.setAutoCancel(true);
         if (mNotificationManager != null)
             mNotificationManager.notify(12345, notificationBuilder.build());
@@ -793,6 +763,8 @@ public class LiveManager {
 
         void refresh();
 
+        void setInfoLive(int width, int height, int bitrate, int fps);
+
         boolean isVideoEnable();
 
         void setVideoEnable(boolean enable);
@@ -841,8 +813,7 @@ public class LiveManager {
 
         @Override
         public void updateBitrate(int bitrate) {
-            if (mCamera != null)
-                mCamera.setVideoBitrateOnFly(bitrate);
+            if (mCamera != null) mCamera.setVideoBitrateOnFly(bitrate);
         }
 
         public void switchCameraFace() {
@@ -873,8 +844,7 @@ public class LiveManager {
 
         @Override
         public Camera getCamera() {
-            if (mCamera != null)
-                return mCamera.getCamera();
+            if (mCamera != null) return mCamera.getCamera();
             return null;
         }
 
@@ -914,15 +884,13 @@ public class LiveManager {
 
         @Override
         public boolean isFrontCamera() {
-            if (mCamera != null)
-                return mCamera.isFrontCamera();
+            if (mCamera != null) return mCamera.isFrontCamera();
             return false;
         }
 
         @Override
         public boolean isOnPreview() {
-            if (mCamera != null)
-                return mCamera.isOnPreview();
+            if (mCamera != null) return mCamera.isOnPreview();
             return false;
         }
 
@@ -951,10 +919,7 @@ public class LiveManager {
             FullLog.LogD(TAG + " setupInternal, cameraIsFront " + isFontCam);
             layoutParent = new MyViewGroup(activity);
             ViewGroup.LayoutParams layoutParamsParent = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-            layoutParent.setPadding((paddings != null && paddings.length > 0) ? paddings[0] : 0,
-                    (paddings != null && paddings.length > 1) ? paddings[1] : 0,
-                    (paddings != null && paddings.length > 2) ? paddings[2] : 0,
-                    (paddings != null && paddings.length > 3) ? paddings[3] : 0);
+            layoutParent.setPadding((paddings != null && paddings.length > 0) ? paddings[0] : 0, (paddings != null && paddings.length > 1) ? paddings[1] : 0, (paddings != null && paddings.length > 2) ? paddings[2] : 0, (paddings != null && paddings.length > 3) ? paddings[3] : 0);
             layoutParent.setLayoutParams(layoutParamsParent);
             for (int i = 0; i < container.getChildCount(); i++) {
                 if (container.getChildAt(i) instanceof MyViewGroup) {
@@ -996,25 +961,24 @@ public class LiveManager {
         @Override
         public void start() {
             FullLog.LogD(TAG + " start, isFrontCam " + isFontCam);
-            if (mListener == null)
-                return;
+            if (mListener == null) return;
             if (stateLive == STARTING || stateLive == STARTED) {
                 mListener.onLiveError(new Exception("Can not start a stream when it's STARTING or STARTED"));
             } else {
                 if (mCamera != null && isSurfaceCreated) {
                     try {
-                        if (mCamera.prepareAudio(mResolution.getAudioBitrate(), 44100, false,
-                                true, true, true)
-                                && mCamera.prepareVideo(mWidth, mHeight, mCamera.getFps(), mResolution.getVideoBitrate(),
-                                false, CameraHelper.getCameraOrientation(mActivity)
+                        if (fps > 0) {
+                            setInfoLive(width, height, bitrate, fps);
+                        }
+                        if (mCamera.prepareAudio(mResolution.getAudioBitrate(), 44100, false, true, true, true)
+                                && mCamera.prepareVideo(mWidth, mHeight, /*mCamera.getFps()*/ mResolution.getFps(), mResolution.getVideoBitrate(), false, CameraHelper.getCameraOrientation(mActivity)
                                 /*CameraHelper.chooseCameraOrientation(mActivity, 0)*/)) {
                             FullLog.LogD("checkUrlLive:" + mUrl + " -- " + mWidth + " -- " + mHeight);
                             mCamera.startStream(mUrl);
                             mListener.onLiveStarting();
                             stateLive = STARTING;
                             printConfig();
-                            if (mLedEnable)
-                                setLedEnable(true);
+                            if (mLedEnable) setLedEnable(true);
                             return;
                         }
                     } catch (Exception ex) {
@@ -1086,23 +1050,20 @@ public class LiveManager {
         public boolean isRunning() {
             if (mCamera != null) {
                 return mCamera.isStreaming();
-            } else
-                return false;
+            } else return false;
 
         }
 
         @Override
         public boolean isAudioEnable() {
-            if (mCamera != null)
-                return !mCamera.isAudioMuted();
+            if (mCamera != null) return !mCamera.isAudioMuted();
             return false;
         }
 
         @Override
         public void setAudioEnable(boolean enable) {
             if (mCamera != null) {
-                if (enable)
-                    mCamera.enableAudio();
+                if (enable) mCamera.enableAudio();
                 else mCamera.disableAudio();
             }
         }
@@ -1111,8 +1072,7 @@ public class LiveManager {
         public boolean setLedEnable(boolean enable) {
             if (mCamera != null) {
                 try {
-                    if (enable)
-                        mCamera.enableLantern();
+                    if (enable) mCamera.enableLantern();
                     else mCamera.disableLantern();
                 } catch (Exception ex) {
                     ex.printStackTrace();
@@ -1135,15 +1095,13 @@ public class LiveManager {
 
         @Override
         public boolean isAudioPrepared() {
-            if (mCamera != null)
-                return mCamera.prepareAudio();
+            if (mCamera != null) return mCamera.prepareAudio();
             return false;
         }
 
         @Override
         public boolean isVideoPrepared() {
-            if (mCamera != null)
-                return mCamera.prepareVideo();
+            if (mCamera != null) return mCamera.prepareVideo();
             return false;
         }
 
@@ -1160,13 +1118,15 @@ public class LiveManager {
         @Override
         public void stopPreview() {
             FullLog.LogD(TAG + " stopPreview, isFrontCam " + isFontCam);
-            if (mCamera != null)
-                mCamera.stopPreview();
+            if (mCamera != null) mCamera.stopPreview();
         }
 
         @Override
         public void refresh() {
             FullLog.LogD("CameraSourceRefresh=>", "123");
+            if (fps > 0) {
+                setInfoLive(width, height, bitrate, fps);
+            }
             List<Camera.Size> sizes = mFace == CameraFace.Back ? mCamera.getResolutionsBack() : mCamera.getResolutionsFront();
             Camera.Size found = sizes.get(0);
             int width = mResolution.getWidth();
@@ -1191,42 +1151,96 @@ public class LiveManager {
 //            mHeight = height;
         }
 
+        @Override
+        public void setInfoLive(int width, int height, int bitrate, int fps) {
+//            Camera camera = Camera.open(isFontCam ? Camera.CameraInfo.CAMERA_FACING_FRONT : Camera.CameraInfo.CAMERA_FACING_BACK);
+            if (mCamera == null) {
+                return;
+            }
+            Camera camera = mCamera.getCamera();
+            if (camera == null) {
+                return;
+            }
+            Camera.Parameters parameters = camera.getParameters();
+
+            for (int i = 0; i < parameters.getSupportedPreviewFpsRange().size(); i++) {
+                FullLog.LogD("check param: " + parameters.getSupportedPreviewFpsRange().get(i)[0] + " -- " + parameters.getSupportedPreviewFpsRange().get(i)[1]);
+            }
+            int[] fpsRange = Camera1ApiManager.adaptFpsRange(fps, parameters.getSupportedPreviewFpsRange());
+
+            int delta = Math.abs(fpsRange[1] / 1000 - Resolution.MFPS[0]);
+            int fpsSelected = fpsRange[1] / 1000;
+
+            for (int i = 0; i < Resolution.MFPS.length; i++) {
+                if (delta > (Math.abs(fpsRange[1] - Resolution.MFPS[i]))) {
+                    delta = Math.abs(fpsRange[1] - Resolution.MFPS[i]);
+                    fpsSelected = Resolution.MFPS[i];
+                }
+            }
+
+//            for (int i = 0; i < parameters.getSupportedPreviewFpsRange().size(); i++) {
+//                FullLog.LogD("check param: 2 " + " -- " + parameters.getSupportedPreviewFpsRange().get(i)[0] + " -- " + parameters.getSupportedPreviewFpsRange().get(i)[1]);
+//            }
+//            FullLog.LogD("check param: 30 " + fpsSelected);
+////            fpsSelected = fpsSelected / 1000;
+//            FullLog.LogD("check param: 3 " + fpsRange[1]);
+
+
+            List<Resolution> resolutionListFps = new ArrayList<>();
+            for (int i = 0; i < mResolutions.size(); i++) {
+                if (mResolutions.get(i).getFps() == fpsSelected) {
+                    resolutionListFps.add(mResolutions.get(i));
+                }
+            }
+            if (resolutionListFps.size() > 0) {
+                int deltaHeight = Math.abs(resolutionListFps.get(0).getHeight() - height);
+                mResolution = resolutionListFps.get(0);
+                for (int i = 0; i < resolutionListFps.size(); i++) {
+                    if (deltaHeight > (Math.abs(resolutionListFps.get(i).getHeight() - height))) {
+                        deltaHeight = Math.abs(resolutionListFps.get(i).getHeight() - height);
+                        mResolution = resolutionListFps.get(i);
+                    }
+                }
+            } else {
+                mResolution = Resolution.HD30;
+            }
+            mFps = mResolution.getFps();
+            FullLog.LogD("checkmResolution: " + mFps + " -- " + fpsRange[1] + " -- " + mResolution.getFps() + " -- " + mResolution.getVideoBitrate() + " -- " + mResolution.getHeight() + " -- " + mResolution.getWidth());
+
+        }
+
         public boolean isVideoEnable() {
-            if (mOpenGlView != null)
-                return mOpenGlView.isVideoEnable();
+            if (mOpenGlView != null) return mOpenGlView.isVideoEnable();
             return false;
         }
 
         public void setVideoEnable(boolean enable) {
-            if (mOpenGlView != null)
-                mOpenGlView.setVideoEnable(enable);
+            if (mOpenGlView != null) mOpenGlView.setVideoEnable(enable);
 
         }
 
         public void captureImage(final ImageCaptureListener listener) {
-            if (mOpenGlView != null)
-                mOpenGlView.takePhoto(new TakePhotoCallback() {
-                    @Override
-                    public void onTakePhoto(final Bitmap bitmap) {
-                        try {
-                            mActivity.runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    listener.onImageCaptured(bitmap);
-                                }
-                            });
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                        }
+            if (mOpenGlView != null) mOpenGlView.takePhoto(new TakePhotoCallback() {
+                @Override
+                public void onTakePhoto(final Bitmap bitmap) {
+                    try {
+                        mActivity.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                listener.onImageCaptured(bitmap);
+                            }
+                        });
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
                     }
-                });
+                }
+            });
         }
 
         @Override
         public void scaleViewOverlay(boolean requestScale) {
 
-            if (mOpenGlView == null || surfaceWidthOld == -2 || surfaceHeightOld == -2)
-                return;
+            if (mOpenGlView == null || surfaceWidthOld == -2 || surfaceHeightOld == -2) return;
 
             float pivotX = 0, pivotY = 0;
 
@@ -1260,20 +1274,10 @@ public class LiveManager {
 
             ScaleAnimation anim;// Needed to keep the result of the animation
             if (requestScale) {
-                anim = new ScaleAnimation(1f, scale / 100, 1f,
-                        scale / 100,
-                        Animation.RELATIVE_TO_PARENT,
-                        pivotX,
-                        Animation.RELATIVE_TO_PARENT,
-                        pivotY);
+                anim = new ScaleAnimation(1f, scale / 100, 1f, scale / 100, Animation.RELATIVE_TO_PARENT, pivotX, Animation.RELATIVE_TO_PARENT, pivotY);
 
             } else {
-                anim = new ScaleAnimation(scale / 100, 1f, scale / 100,
-                        1f,
-                        Animation.RELATIVE_TO_PARENT,
-                        pivotX,
-                        Animation.RELATIVE_TO_PARENT,
-                        pivotY);
+                anim = new ScaleAnimation(scale / 100, 1f, scale / 100, 1f, Animation.RELATIVE_TO_PARENT, pivotX, Animation.RELATIVE_TO_PARENT, pivotY);
             }
             anim.setFillAfter(true); // Needed to keep the result of the animation
             anim.setDuration(durationMs);
@@ -1286,8 +1290,7 @@ public class LiveManager {
 
         @Override
         public void updateBitrate(int bitrate) {
-            if (mDisplay != null)
-                mDisplay.setVideoBitrateOnFly(bitrate);
+            if (mDisplay != null) mDisplay.setVideoBitrateOnFly(bitrate);
         }
 
         public void switchCameraFace() {
@@ -1296,14 +1299,13 @@ public class LiveManager {
 
         @Override
         public void setImageWaiting(Bitmap bitmap) {
-            if (mDisplay != null)
-                Common.post(mActivity.getApplicationContext(), new Runnable() {
-                    @Override
-                    public void run() {
-                        if (mDisplay.getOpenGl() != null)
-                            mDisplay.getOpenGl().setImageThumbnail(bitmap);
-                    }
-                });
+            if (mDisplay != null) Common.post(mActivity.getApplicationContext(), new Runnable() {
+                @Override
+                public void run() {
+                    if (mDisplay.getOpenGl() != null)
+                        mDisplay.getOpenGl().setImageThumbnail(bitmap);
+                }
+            });
         }
 
         @Override
@@ -1343,8 +1345,11 @@ public class LiveManager {
 
         @Override
         public void start() {
-            if (mActivity != null && mDisplay != null)
+            FullLog.LogD("setOnClickListener3");
+            if (mActivity != null && mDisplay != null) {
+                FullLog.LogD("setOnClickListener4");
                 mActivity.startActivityForResult(mDisplay.sendIntent(), REQUEST_CODE_STREAM);
+            }
         }
 
         @Override
@@ -1384,12 +1389,11 @@ public class LiveManager {
 
         @Override
         public void onPause(Boolean p) {
-            if (mDisplay != null)
-                if (p) {
-                    mDisplay.enableAudio();
-                } else {
-                    mDisplay.disableAudio();
-                }
+            if (mDisplay != null) if (p) {
+                mDisplay.enableAudio();
+            } else {
+                mDisplay.disableAudio();
+            }
         }
 
         public void startLive() {
@@ -1447,9 +1451,11 @@ public class LiveManager {
                 if (mDisplay == null || mResolution == null || mActivity == null || mListener == null) {
                     return;
                 }
-                if (mDisplay.prepareAudio(mResolution.getAudioBitrate(), 48000, false,
-                        true, true, true)
-                        && mDisplay.prepareVideo(mWidth, mHeight, mFps, mResolution.getVideoBitrate(), false, 0, 320)) {
+                if (fps > 0) {
+                    setInfoLive(width, height, bitrate, fps);
+                }
+                if (mDisplay.prepareAudio(mResolution.getAudioBitrate(), 48000, false, true, true, true)
+                        && mDisplay.prepareVideo(mResolution.getWidth(), mResolution.getHeight(), mFps, mResolution.getVideoBitrate(), false, 0, 320)) {
 
                     if (isMyServiceRunning(SigmaService.class, mActivity)) {
                         Intent intent = new Intent(mActivity, SigmaService.class);
@@ -1476,19 +1482,18 @@ public class LiveManager {
         @Override
         public void stop() {
             FullLog.LogD(TAG + " stop ");
-            if (mDisplay != null)
-                try {
-                    FullLog.LogD(TAG + " SrsFlvMuxer: stop screen");
-                    hideNotification();
-                    isCallStop = true;
-                    mDisplay.stopStream();
-                    Intent intent = new Intent(mActivity, SigmaService.class);
-                    mActivity.stopService(intent);
+            if (mDisplay != null) try {
+                FullLog.LogD(TAG + " SrsFlvMuxer: stop screen");
+                hideNotification();
+                isCallStop = true;
+                mDisplay.stopStream();
+                Intent intent = new Intent(mActivity, SigmaService.class);
+                mActivity.stopService(intent);
 
-                } catch (Exception ex) {
-                    mListener.onLiveError(new Exception("Stop stream error"));
-                    ex.printStackTrace();
-                }
+            } catch (Exception ex) {
+                mListener.onLiveError(new Exception("Stop stream error"));
+                ex.printStackTrace();
+            }
         }
 
         @Override
@@ -1508,24 +1513,20 @@ public class LiveManager {
 
         @Override
         public boolean isRunning() {
-            if (mDisplay != null)
-                return mDisplay.isStreaming();
+            if (mDisplay != null) return mDisplay.isStreaming();
             return false;
         }
 
         @Override
         public boolean isAudioEnable() {
-            if (mDisplay != null)
-                return !mDisplay.isAudioMuted();
+            if (mDisplay != null) return !mDisplay.isAudioMuted();
             return false;
         }
 
         @Override
         public void setAudioEnable(boolean enable) {
-            if (mDisplay != null)
-                if (enable)
-                    mDisplay.enableAudio();
-                else mDisplay.disableAudio();
+            if (mDisplay != null) if (enable) mDisplay.enableAudio();
+            else mDisplay.disableAudio();
         }
 
         @Override
@@ -1565,38 +1566,71 @@ public class LiveManager {
 
         @Override
         public void refresh() {
+            if (fps > 0) {
+                setInfoLive(width, height, bitrate, fps);
+            }
             mWidth = mResolution.getWidth();
             mHeight = mResolution.getHeight();
         }
 
+        @Override
+        public void setInfoLive(int width, int height, int bitrate, int fps) {
+            int fpsSelected = 30;
+            int delta = 100;
+
+            for (int i = 0; i < Resolution.MFPS.length; i++) {
+                if (delta > (Math.abs(fps - Resolution.MFPS[i]))) {
+                    delta = Math.abs(fps - Resolution.MFPS[i]);
+                    fpsSelected = Resolution.MFPS[i];
+                }
+            }
+            List<Resolution> resolutionListFps = new ArrayList<>();
+            for (int i = 0; i < mResolutions.size(); i++) {
+                if (mResolutions.get(i).getFps() == fpsSelected) {
+                    resolutionListFps.add(mResolutions.get(i));
+                }
+            }
+            if (resolutionListFps.size() > 0) {
+                mResolution = resolutionListFps.get(0);
+                int deltaHeight = Math.abs(resolutionListFps.get(0).getHeight() - height);
+
+                for (int i = 0; i < resolutionListFps.size(); i++) {
+                    if (deltaHeight > (Math.abs(resolutionListFps.get(i).getHeight() - height))) {
+                        deltaHeight = Math.abs(resolutionListFps.get(i).getHeight() - height);
+                        mResolution = resolutionListFps.get(i);
+                    }
+                }
+            } else {
+                mResolution = Resolution.HD30;
+            }
+            mFps = mResolution.getFps();
+        }
+
         public boolean isVideoEnable() {
-            if (mDisplay != null)
-                return mDisplay.getOpenGl().isVideoEnable();
+            if (mDisplay != null) return mDisplay.getOpenGl().isVideoEnable();
             return false;
         }
 
         public void setVideoEnable(boolean enable) {
-            if (mDisplay != null)
-                mDisplay.getOpenGl().setVideoEnable(enable);
+            if (mDisplay != null) mDisplay.getOpenGl().setVideoEnable(enable);
         }
 
         public void captureImage(final ImageCaptureListener listener) {
-            if (mDisplay != null)
-                mDisplay.getOpenGl().takePhoto(new TakePhotoCallback() {
-                    @Override
-                    public void onTakePhoto(final Bitmap bitmap) {
-                        try {
-                            mActivity.runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    listener.onImageCaptured(bitmap);
-                                }
-                            });
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                        }
+            if (mDisplay != null) mDisplay.getOpenGl().takePhoto(new TakePhotoCallback() {
+                @Override
+                public void onTakePhoto(final Bitmap bitmap) {
+                    try {
+                        mActivity.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                listener.onImageCaptured(bitmap);
+                            }
+                        });
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
                     }
-                });
+                }
+            });
         }
 
         @Override
@@ -1752,6 +1786,11 @@ public class LiveManager {
         }
 
         @Override
+        public void setInfoLive(int width, int height, int bitrate, int fps) {
+
+        }
+
+        @Override
         public boolean isVideoEnable() {
             return false;
         }
@@ -1771,304 +1810,293 @@ public class LiveManager {
             return null;
         }
     }
-
-    class FileSource implements VideoSource {
-        CameraFace mFace = CameraFace.Back;
-        boolean mLedEnable;
-        RtmpCamera1 mCamera;
-        ViewGroup viewParent;
-
-        public RtmpCamera1 getmCamera() {
-            return mCamera;
-        }
-
-        private OpenGlView mOpenGlView;
-
-        @Override
-        public void updateBitrate(int bitrate) {
-            if (mCamera != null)
-                mCamera.setVideoBitrateOnFly(bitrate);
-        }
-
-        public void switchCameraFace() {
-            setCameraFace(mFace == CameraFace.Back ? CameraFace.Front : CameraFace.Back);
-        }
-
-        @Override
-        public void setImageWaiting(Bitmap bitmap) {
-            if (mActivity != null && mOpenGlView != null)
-                Common.post(mActivity.getApplicationContext(), new Runnable() {
-                    @Override
-                    public void run() {
-                        if (mOpenGlView != null) {
-                            mOpenGlView.setImageThumbnail(bitmap);
-                        }
-                    }
-                });
-
-        }
-
-        @Override
-        public CameraFace getCameraFace() {
-            return mFace;
-        }
-
-        @Override
-        public Camera getCamera() {
-            if (mCamera != null)
-                return mCamera.getCamera();
-            return null;
-        }
-
-        @Override
-        public void setCamera(CameraFace face) {
-
-        }
-
-        @Override
-        public boolean isFrontCamera() {
-            return false;
-        }
-
-        @Override
-        public boolean isOnPreview() {
-            if (mCamera != null)
-                return mCamera.isOnPreview();
-            return false;
-        }
-
-        @Override
-        public void setCameraFace(CameraFace face) {
-            if (mCamera != null) {
-                if (face == mFace) return;
-                try {
-                    mCamera.switchCamera();
-                    mFace = face;
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                    mFace = face;
-                    refresh();
-                    restart();
-                }
-            }
-        }
-
-
-        @Override
-        public void setupInternal(Activity activity, ViewGroup container, int[] paddings) throws Exception {
-
-        }
-
-
-        public void setupFileInternal(OpenGlView openGlView) {
-
-            mOpenGlView = openGlView;
-            mOpenGlView.setKeepAspectRatio(true);
-            mOpenGlView.getHolder().addCallback(mSurfaceCallback);
-            mCamera = new RtmpCamera1(mOpenGlView, mConnectCheckRtmp);
-        }
-
-
-        @Override
-        public void start() {
-            if (mCamera != null)
-                try {
-                    if (mCamera.prepareAudio(mResolution.getAudioBitrate(), 44100, false, true, true, true) && mCamera.prepareVideo(mWidth, mHeight, mCamera.getFps(), mResolution.getVideoBitrate(), false, CameraHelper.getCameraOrientation(mActivity) /*CameraHelper.chooseCameraOrientation(mActivity, 0)*/)) {
-                        FullLog.LogD("checkUrlLive:" + mUrl + " -- " + mWidth + " -- " + mHeight);
-                        mCamera.startStream(mUrl);
-                        mListener.onLiveStarting();
-                        printConfig();
-                        if (mLedEnable)
-                            setLedEnable(true);
-                    }
-                } catch (Exception ex) {
-                    mListener.onLiveError(ex);
-                    ex.printStackTrace();
-                    stop();
-                }
-        }
-
-        @Override
-        public void setSurfaceViewParams(Common.TypePivot pivot, int widthPixel, int heightPixel, int startX, int startY, int durationMs) {
-
-        }
-
-        @Override
-        public void scaleViewOverlay(boolean requestScale) {
-
-        }
-
-        @Override
-        public void onStart(int resultCode, Intent data) {
-
-        }
-
-        @Override
-        public void onPause(Boolean p) {
-            LiveManager.this.setAudioEnable(p);
-            LiveManager.this.setVideoEnable(p);
-        }
-
-        @Override
-        public void reconnect() {
-
-        }
-
-        @Override
-        public void stop() {
-            if (mCamera != null) {
-                mCamera.stopStream();
-                boolean isLedOn = isLedEnable();
-                if (isLedOn) {
-                    setLedEnable(false);
-                    mLedEnable = isLedOn;
-                }
-            }
-            if (mOpenGlView != null) {
-                mOpenGlView.getHolder().removeCallback(mSurfaceCallback);
-            }
-        }
-
-        @Override
-        public void callDisconnect() {
-
-        }
-
-        @Override
-        public boolean isRunning() {
-            if (mCamera != null) {
-                return mCamera.isStreaming();
-            } else
-                return false;
-
-        }
-
-        @Override
-        public boolean isAudioEnable() {
-            if (mCamera != null)
-                return !mCamera.isAudioMuted();
-            return false;
-        }
-
-        @Override
-        public void setAudioEnable(boolean enable) {
-            if (mCamera != null) {
-                if (enable)
-                    mCamera.enableAudio();
-                else mCamera.disableAudio();
-            }
-        }
-
-        @Override
-        public boolean setLedEnable(boolean enable) {
-            if (mCamera != null) {
-                try {
-                    if (enable)
-                        mCamera.enableLantern();
-                    else mCamera.disableLantern();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-                return mLedEnable = isLedEnable();
-            }
-            return false;
-
-        }
-
-        @Override
-        public boolean isLedEnable() {
-            if (mCamera != null) {
-                return mCamera.isLanternEnabled();
-            } else {
-                return false;
-            }
-
-        }
-
-        @Override
-        public boolean isAudioPrepared() {
-            if (mCamera != null)
-                return mCamera.prepareAudio();
-            return false;
-        }
-
-        @Override
-        public boolean isVideoPrepared() {
-            if (mCamera != null)
-                return mCamera.prepareVideo();
-            return false;
-        }
-
-        @Override
-        public void startPreview() {
-            if (mCamera != null)
-                mCamera.startPreview(mFace.getValue(), mWidth, mHeight, mFps);
-        }
-
-        @Override
-        public void stopPreview() {
-            if (mCamera != null)
-                mCamera.stopPreview();
-        }
-
-        @Override
-        public void refresh() {
-            FullLog.LogD("CameraSourceRefresh=>", "123");
-            List<Camera.Size> sizes = mFace == CameraFace.Back ? mCamera.getResolutionsBack() : mCamera.getResolutionsFront();
-            Camera.Size found = sizes.get(0);
-            int width = mResolution.getWidth();
-            int height = mResolution.getHeight();
-            int dxf = Math.abs(found.width - width);
-            int dyf = Math.abs(found.height - height);
-            for (int i = 0; i < sizes.size(); i++) {
-                Camera.Size size = sizes.get(i);
-                int dx = Math.abs(size.width - width);
-                int dy = Math.abs(size.height - height);
-                if (dy < dyf || dy == dyf && dx < dxf) {
-                    dxf = dx;
-                    dyf = dy;
-                    found = size;
-                    FullLog.LogD("camerasize=>", found.width + "_" + found.height + "_" + width + "_" + height);
-                }
-            }
-            FullLog.LogD("camerasize=>final", found.width + "_" + found.height + "_" + width + "_" + height);
-            mWidth = found.width;
-            mHeight = found.height;
-//            mWidth = width;
-//            mHeight = height;
-        }
-
-        public boolean isVideoEnable() {
-            if (mOpenGlView != null)
-                return mOpenGlView.isVideoEnable();
-            return false;
-        }
-
-        public void setVideoEnable(boolean enable) {
-            if (mOpenGlView != null)
-                mOpenGlView.setVideoEnable(enable);
-
-        }
-
-        public void captureImage(final ImageCaptureListener listener) {
-            if (mOpenGlView != null)
-                mOpenGlView.takePhoto(new TakePhotoCallback() {
-                    @Override
-                    public void onTakePhoto(final Bitmap bitmap) {
-                        try {
-                            mActivity.runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    listener.onImageCaptured(bitmap);
-                                }
-                            });
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                        }
-                    }
-                });
-        }
-    }
+//    class FileSource implements VideoSource {
+//        CameraFace mFace = CameraFace.Back;
+//        boolean mLedEnable;
+//        RtmpCamera1 mCamera;
+//        ViewGroup viewParent;
+//
+//        public RtmpCamera1 getmCamera() {
+//            return mCamera;
+//        }
+//
+//        private OpenGlView mOpenGlView;
+//
+//        @Override
+//        public void updateBitrate(int bitrate) {
+//            if (mCamera != null) mCamera.setVideoBitrateOnFly(bitrate);
+//        }
+//
+//        public void switchCameraFace() {
+//            setCameraFace(mFace == CameraFace.Back ? CameraFace.Front : CameraFace.Back);
+//        }
+//
+//        @Override
+//        public void setImageWaiting(Bitmap bitmap) {
+//            if (mActivity != null && mOpenGlView != null)
+//                Common.post(mActivity.getApplicationContext(), new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        if (mOpenGlView != null) {
+//                            mOpenGlView.setImageThumbnail(bitmap);
+//                        }
+//                    }
+//                });
+//
+//        }
+//
+//        @Override
+//        public CameraFace getCameraFace() {
+//            return mFace;
+//        }
+//
+//        @Override
+//        public Camera getCamera() {
+//            if (mCamera != null) return mCamera.getCamera();
+//            return null;
+//        }
+//
+//        @Override
+//        public void setCamera(CameraFace face) {
+//
+//        }
+//
+//        @Override
+//        public boolean isFrontCamera() {
+//            return false;
+//        }
+//
+//        @Override
+//        public boolean isOnPreview() {
+//            if (mCamera != null) return mCamera.isOnPreview();
+//            return false;
+//        }
+//
+//        @Override
+//        public void setCameraFace(CameraFace face) {
+//            if (mCamera != null) {
+//                if (face == mFace) return;
+//                try {
+//                    mCamera.switchCamera();
+//                    mFace = face;
+//                } catch (Exception ex) {
+//                    ex.printStackTrace();
+//                    mFace = face;
+//                    refresh();
+//                    restart();
+//                }
+//            }
+//        }
+//
+//
+//        @Override
+//        public void setupInternal(Activity activity, ViewGroup container, int[] paddings) throws Exception {
+//
+//        }
+//
+//
+//        public void setupFileInternal(OpenGlView openGlView) {
+//
+//            mOpenGlView = openGlView;
+//            mOpenGlView.setKeepAspectRatio(true);
+//            mOpenGlView.getHolder().addCallback(mSurfaceCallback);
+//            mCamera = new RtmpCamera1(mOpenGlView, mConnectCheckRtmp);
+//        }
+//
+//
+//        @Override
+//        public void start() {
+//            if (mCamera != null) try {
+//                if (mCamera.prepareAudio(mResolution.getAudioBitrate(), 44100, false, true, true, true)
+//                        && mCamera.prepareVideo(mWidth, mHeight, mCamera.getFps(), mResolution.getVideoBitrate(), false, CameraHelper.getCameraOrientation(mActivity) /*CameraHelper.chooseCameraOrientation(mActivity, 0)*/)) {
+//                    FullLog.LogD("checkUrlLive:" + mUrl + " -- " + mWidth + " -- " + mHeight);
+//                    mCamera.startStream(mUrl);
+//                    mListener.onLiveStarting();
+//                    printConfig();
+//                    if (mLedEnable) setLedEnable(true);
+//                }
+//            } catch (Exception ex) {
+//                mListener.onLiveError(ex);
+//                ex.printStackTrace();
+//                stop();
+//            }
+//        }
+//
+//        @Override
+//        public void setSurfaceViewParams(Common.TypePivot pivot, int widthPixel, int heightPixel, int startX, int startY, int durationMs) {
+//
+//        }
+//
+//        @Override
+//        public void scaleViewOverlay(boolean requestScale) {
+//
+//        }
+//
+//        @Override
+//        public void onStart(int resultCode, Intent data) {
+//
+//        }
+//
+//        @Override
+//        public void onPause(Boolean p) {
+//            LiveManager.this.setAudioEnable(p);
+//            LiveManager.this.setVideoEnable(p);
+//        }
+//
+//        @Override
+//        public void reconnect() {
+//
+//        }
+//
+//        @Override
+//        public void stop() {
+//            if (mCamera != null) {
+//                mCamera.stopStream();
+//                boolean isLedOn = isLedEnable();
+//                if (isLedOn) {
+//                    setLedEnable(false);
+//                    mLedEnable = isLedOn;
+//                }
+//            }
+//            if (mOpenGlView != null) {
+//                mOpenGlView.getHolder().removeCallback(mSurfaceCallback);
+//            }
+//        }
+//
+//        @Override
+//        public void callDisconnect() {
+//
+//        }
+//
+//        @Override
+//        public boolean isRunning() {
+//            if (mCamera != null) {
+//                return mCamera.isStreaming();
+//            } else return false;
+//
+//        }
+//
+//        @Override
+//        public boolean isAudioEnable() {
+//            if (mCamera != null) return !mCamera.isAudioMuted();
+//            return false;
+//        }
+//
+//        @Override
+//        public void setAudioEnable(boolean enable) {
+//            if (mCamera != null) {
+//                if (enable) mCamera.enableAudio();
+//                else mCamera.disableAudio();
+//            }
+//        }
+//
+//        @Override
+//        public boolean setLedEnable(boolean enable) {
+//            if (mCamera != null) {
+//                try {
+//                    if (enable) mCamera.enableLantern();
+//                    else mCamera.disableLantern();
+//                } catch (Exception ex) {
+//                    ex.printStackTrace();
+//                }
+//                return mLedEnable = isLedEnable();
+//            }
+//            return false;
+//
+//        }
+//
+//        @Override
+//        public boolean isLedEnable() {
+//            if (mCamera != null) {
+//                return mCamera.isLanternEnabled();
+//            } else {
+//                return false;
+//            }
+//
+//        }
+//
+//        @Override
+//        public boolean isAudioPrepared() {
+//            if (mCamera != null) return mCamera.prepareAudio();
+//            return false;
+//        }
+//
+//        @Override
+//        public boolean isVideoPrepared() {
+//            if (mCamera != null) return mCamera.prepareVideo();
+//            return false;
+//        }
+//
+//        @Override
+//        public void startPreview() {
+//            if (mCamera != null) mCamera.startPreview(mFace.getValue(), mWidth, mHeight, mFps);
+//        }
+//
+//        @Override
+//        public void stopPreview() {
+//            if (mCamera != null) mCamera.stopPreview();
+//        }
+//
+//        @Override
+//        public void refresh() {
+//            FullLog.LogD("CameraSourceRefresh=>", "123");
+//            List<Camera.Size> sizes = mFace == CameraFace.Back ? mCamera.getResolutionsBack() : mCamera.getResolutionsFront();
+//            Camera.Size found = sizes.get(0);
+//            int width = mResolution.getWidth();
+//            int height = mResolution.getHeight();
+//            int dxf = Math.abs(found.width - width);
+//            int dyf = Math.abs(found.height - height);
+//            for (int i = 0; i < sizes.size(); i++) {
+//                Camera.Size size = sizes.get(i);
+//                int dx = Math.abs(size.width - width);
+//                int dy = Math.abs(size.height - height);
+//                if (dy < dyf || dy == dyf && dx < dxf) {
+//                    dxf = dx;
+//                    dyf = dy;
+//                    found = size;
+//                    FullLog.LogD("camerasize=>", found.width + "_" + found.height + "_" + width + "_" + height);
+//                }
+//            }
+//            FullLog.LogD("camerasize=>final", found.width + "_" + found.height + "_" + width + "_" + height);
+//            mWidth = found.width;
+//            mHeight = found.height;
+////            mWidth = width;
+////            mHeight = height;
+//        }
+//
+//        @Override
+//        public void setInfoLive(int width, int height, int bitrate, int fps) {
+//
+//        }
+//
+//        public boolean isVideoEnable() {
+//            if (mOpenGlView != null) return mOpenGlView.isVideoEnable();
+//            return false;
+//        }
+//
+//        public void setVideoEnable(boolean enable) {
+//            if (mOpenGlView != null) mOpenGlView.setVideoEnable(enable);
+//
+//        }
+//
+//        public void captureImage(final ImageCaptureListener listener) {
+//            if (mOpenGlView != null) mOpenGlView.takePhoto(new TakePhotoCallback() {
+//                @Override
+//                public void onTakePhoto(final Bitmap bitmap) {
+//                    try {
+//                        mActivity.runOnUiThread(new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                listener.onImageCaptured(bitmap);
+//                            }
+//                        });
+//                    } catch (Exception ex) {
+//                        ex.printStackTrace();
+//                    }
+//                }
+//            });
+//        }
+//    }
 
 
     public boolean checkCameraAvailable(Context context) {
@@ -2077,9 +2105,7 @@ public class LiveManager {
             String[] cameraIds = cameraManager.getCameraIdList();
 
             for (String cameraId : cameraIds) {
-                boolean isCameraAvailable = cameraManager.getCameraCharacteristics(cameraId)
-                        .get(CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL)
-                        != CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_LEGACY;
+                boolean isCameraAvailable = cameraManager.getCameraCharacteristics(cameraId).get(CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL) != CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_LEGACY;
                 if (!isCameraAvailable) {
                     return false;
                 }

@@ -12,6 +12,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.hardware.Camera;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -196,8 +197,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        Intent intent = new Intent(this, SigmaService.class);
-        startService(intent);
+//        Intent intent = new Intent(this, SigmaService.class);
+//        startService(intent);
 //
 //        IntentFilter intentFilter = new IntentFilter(Intent.ACTION_PACKAGE_REMOVED);
 //        intentFilter.addDataScheme("package");

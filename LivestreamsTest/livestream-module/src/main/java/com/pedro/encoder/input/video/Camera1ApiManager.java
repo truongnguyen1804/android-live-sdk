@@ -53,7 +53,7 @@ public class Camera1ApiManager implements Camera.PreviewCallback, Camera.FaceDet
     //default parameters for camera
     private int width = 640;
     private int height = 480;
-    private int preferFps = 30;
+    private int preferFps = 10;
     private int fps = 30;
     private int rotation = 0;
     private int imageFormat = ImageFormat.NV21;
@@ -246,7 +246,7 @@ public class Camera1ApiManager implements Camera.PreviewCallback, Camera.FaceDet
         return running;
     }
 
-    private int[] adaptFpsRange(int expectedFps, List<int[]> fpsRanges) {
+    public static int[] adaptFpsRange(int expectedFps, List<int[]> fpsRanges) {
         expectedFps *= 1000;
         int[] closestRange = fpsRanges.get(0);
         int measure = Math.abs(closestRange[0] - expectedFps) + Math.abs(closestRange[1] - expectedFps);

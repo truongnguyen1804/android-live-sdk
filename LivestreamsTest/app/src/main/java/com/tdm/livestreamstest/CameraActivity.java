@@ -22,6 +22,7 @@ import com.sigma.FullLog;
 import com.sigma.live.CameraFace;
 import com.sigma.live.LiveListener;
 import com.sigma.live.LiveManager;
+import com.sigma.live.Resolution;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -59,14 +60,17 @@ public class CameraActivity extends AppCompatActivity {
             public void onClick(View view) {
                 if (MainActivity.checkPermission(CameraActivity.this)) {
                     if (LiveManager.getInstance().isRunning()) {
-                        LiveManager.getInstance().stop();
-                        imgPlay.setImageResource(R.drawable.ic_play_arrow);
+//                        LiveManager.getInstance().stop();
+//                        imgPlay.setImageResource(R.drawable.ic_play_arrow);
+//                        LiveManager.getInstance().setInfoLive(500, 10000, 10000, 30);
                     } else {
+//                        LiveManager.getInstance().setInfoLive(500, 600, 10000, 5);
 
-//                        LiveManager.getInstance().start("rtmp://live.twitch.tv/app/live_926961558_dieFvvmelCjlO7ghTejMDm1WGXytCk");
+//                        LiveManager.getInstance().setResolution(Resolution.HD15);
+                        LiveManager.getInstance().start("rtmp://live.twitch.tv/app/live_926961558_dieFvvmelCjlO7ghTejMDm1WGXytCk");
 //                        LiveManager.getInstance().start("rtmp://live.ori2.vtc.vn:1935/origin2/f7d3966bc1244ad8ba658395bf1313b6");
-                        LiveManager.getInstance().start("rtmp://live.twitch.tv/app/live_162311279_a2TQ6agKAohE6VyCuwFO6zq5xC74FJ");
-                        LiveManager.getInstance().start("rtmp://live.twitch.tv/app/live_162311279_a2TQ6agKAohE6VyCuwFO6zq5xC74FJ");
+//                        LiveManager.getInstance().start("rtmp://live.twitch.tv/app/live_162311279_a2TQ6agKAohE6VyCuwFO6zq5xC74FJ");
+//                        LiveManager.getInstance().start("rtmp://live.twitch.tv/app/live_162311279_a2TQ6agKAohE6VyCuwFO6zq5xC74FJ");
 
                     }
                 } else {
@@ -115,14 +119,14 @@ public class CameraActivity extends AppCompatActivity {
         });
 
 
-
-
     }
+
     @Override
     protected void onResume() {
         FullLog.LogD("checkResume");
         super.onResume();
         try {
+            LiveManager.getInstance().setInfoLive(500, 800, 10000, 30);
             LiveManager.getInstance().setup(this, findViewById(R.id.view_screen), test,
                     new LiveListener() {
                         @Override
@@ -172,13 +176,15 @@ public class CameraActivity extends AppCompatActivity {
                         public void onPermissionDenied() {
 
                         }
-                    },true, new LiveManager.PreviewSizeListener() {
+                    }, true,
+                    new LiveManager.PreviewSizeListener() {
                         @Override
                         public void onPreviewSize(int width, int height) {
                             FullLog.LogD("onPreviewSize width: " + width + " -- " + "heigh: " + height);
 
                         }
-                    }, new OpenGlView.SurfaceListener() {
+                    },
+                    new OpenGlView.SurfaceListener() {
                         @Override
                         public void onCreated() {
 
@@ -206,7 +212,6 @@ public class CameraActivity extends AppCompatActivity {
                     });
 
 
-//
             LiveManager.getInstance().setSurfaceViewParams(Common.TypePivot.LEFT, 1080, 1000, 0, 0, 2000);
 
 //            Bitmap bitmap = ((BitmapDrawable) ContextCompat.getDrawable(this, R.drawable.okokoo)).getBitmap();
@@ -287,7 +292,7 @@ public class CameraActivity extends AppCompatActivity {
                             public void onPermissionDenied() {
 
                             }
-                        },true, new LiveManager.PreviewSizeListener() {
+                        }, true, new LiveManager.PreviewSizeListener() {
                             @Override
                             public void onPreviewSize(int width, int height) {
                                 FullLog.LogD("onPreviewSize width: " + width + " -- " + "heigh: " + height);
@@ -343,7 +348,7 @@ public class CameraActivity extends AppCompatActivity {
                 public void run() {
                     LiveManager.getInstance().start("rtmp://live.twitch.tv/app/live_162311279_a2TQ6agKAohE6VyCuwFO6zq5xC74FJ");
                 }
-            },2000);
+            }, 2000);
         }
     };
 

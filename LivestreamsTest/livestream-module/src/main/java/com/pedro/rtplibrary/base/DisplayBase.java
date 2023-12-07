@@ -113,6 +113,7 @@ public abstract class DisplayBase implements GetAacData, GetVideoData, GetMicrop
     }
 
     public boolean prepareVideo(int width, int height, int fps, int bitrate, boolean hardwareRotation, int rotation, int dpi) {
+        FullLog.LogD("prepareVideo: "+ width +" -- "+ height +" -- "+ fps+" -- "+ bitrate);
         this.dpi = dpi;
         boolean result =
                 videoEncoder.prepareVideoEncoder(width, height, fps, bitrate, rotation, hardwareRotation, 2,

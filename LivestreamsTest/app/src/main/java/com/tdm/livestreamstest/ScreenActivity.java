@@ -48,11 +48,14 @@ public class ScreenActivity extends AppCompatActivity {
         imgPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                FullLog.LogD("setOnClickListener");
                 if (MainActivity.checkPermission(ScreenActivity.this)) {
                     if (LiveManager.getInstance().isRunning()) {
+                        FullLog.LogD("setOnClickListener1");
                         LiveManager.getInstance().stop();
                         imgPlay.setImageResource(R.drawable.ic_play_arrow);
                     } else {
+                        FullLog.LogD("setOnClickListener2");
                         LiveManager.getInstance().start("rtmp://live.twitch.tv/app/live_926961558_dieFvvmelCjlO7ghTejMDm1WGXytCk");
                     }
                 } else {
@@ -86,7 +89,8 @@ public class ScreenActivity extends AppCompatActivity {
         });
 
         try {
-            if (LiveManager.mVideoSource == null)
+//            if (LiveManager.mVideoSource == null)
+            LiveManager.getInstance().setInfoLive(500, 300, 10000, 60);
                 LiveManager.getInstance().setupScreenStream(this, findViewById(R.id.view_screen),
                         new LiveListener() {
                             @Override
