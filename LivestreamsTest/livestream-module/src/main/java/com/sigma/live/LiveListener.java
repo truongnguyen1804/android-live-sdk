@@ -13,8 +13,12 @@ public interface LiveListener {
     void onDisConnect();
 
     void onConnectFailed(Exception err);
+
     void onConnectionStarted();
+
     void onNewBitrateReceived(long b);
 
     void onPermissionDenied();
+
+    void onPrepareError(Exception ex);
 }

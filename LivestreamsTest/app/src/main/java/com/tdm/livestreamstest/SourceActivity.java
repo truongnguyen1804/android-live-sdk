@@ -181,6 +181,11 @@ public class SourceActivity extends AppCompatActivity {
                         public void onPermissionDenied() {
 
                         }
+
+                        @Override
+                        public void onPrepareError(Exception ex) {
+
+                        }
                     });
 
 

@@ -126,7 +126,7 @@ public class CameraActivity extends AppCompatActivity {
         FullLog.LogD("checkResume");
         super.onResume();
         try {
-            LiveManager.getInstance().setInfoLive(500, 800, 10000, 30);
+            LiveManager.getInstance().setInfoLive(500, 1080, 10000, 30);
             LiveManager.getInstance().setup(this, findViewById(R.id.view_screen), test,
                     new LiveListener() {
                         @Override
@@ -174,6 +174,11 @@ public class CameraActivity extends AppCompatActivity {
 
                         @Override
                         public void onPermissionDenied() {
+
+                        }
+
+                        @Override
+                        public void onPrepareError(Exception ex) {
 
                         }
                     }, true,
@@ -290,6 +295,11 @@ public class CameraActivity extends AppCompatActivity {
 
                             @Override
                             public void onPermissionDenied() {
+
+                            }
+
+                            @Override
+                            public void onPrepareError(Exception ex) {
 
                             }
                         }, true, new LiveManager.PreviewSizeListener() {

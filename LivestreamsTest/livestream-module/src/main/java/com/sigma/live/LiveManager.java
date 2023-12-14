@@ -981,6 +981,9 @@ public class LiveManager {
                             if (mLedEnable) setLedEnable(true);
                             return;
                         }
+                        else {
+                            mListener.onPrepareError(new Exception("prepare is error!"));
+                        }
                     } catch (Exception ex) {
                         mListener.onLiveError(ex);
                         ex.printStackTrace();
@@ -1449,6 +1452,7 @@ public class LiveManager {
             @Override
             public void run() {
                 if (mDisplay == null || mResolution == null || mActivity == null || mListener == null) {
+                    mListener.onPrepareError(new Exception("prepare is error at mDisplay: " + (mDisplay == null) + " -- mResolution: " + (mResolution == null) + " -- mActivity: " + (mActivity == null) + " -- mListener" + (mListener == null)));
                     return;
                 }
                 if (fps > 0) {
@@ -1467,7 +1471,7 @@ public class LiveManager {
                     handlers.removeCallbacks(runnableStartLive);
                     handlers.postDelayed(runnableStartLive, 1000);
                 } else {
-                    mListener.onLiveError(new Exception("prepareAudio is error!"));
+                    mListener.onPrepareError(new Exception("prepare is error!"));
                 }
             }
         };
@@ -1489,7 +1493,6 @@ public class LiveManager {
                 mDisplay.stopStream();
                 Intent intent = new Intent(mActivity, SigmaService.class);
                 mActivity.stopService(intent);
-
             } catch (Exception ex) {
                 mListener.onLiveError(new Exception("Stop stream error"));
                 ex.printStackTrace();

@@ -90,7 +90,7 @@ public class ScreenActivity extends AppCompatActivity {
 
         try {
 //            if (LiveManager.mVideoSource == null)
-            LiveManager.getInstance().setInfoLive(500, 300, 10000, 60);
+            LiveManager.getInstance().setInfoLive(500, 1080, 10000, 30);
                 LiveManager.getInstance().setupScreenStream(this, findViewById(R.id.view_screen),
                         new LiveListener() {
                             @Override
@@ -137,6 +137,11 @@ public class ScreenActivity extends AppCompatActivity {
 
                             @Override
                             public void onPermissionDenied() {
+
+                            }
+
+                            @Override
+                            public void onPrepareError(Exception ex) {
 
                             }
                         });
