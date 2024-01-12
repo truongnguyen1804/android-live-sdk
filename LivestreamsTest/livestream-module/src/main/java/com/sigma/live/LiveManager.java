@@ -971,9 +971,10 @@ public class LiveManager {
                             setInfoLive(width, height, bitrate, fps);
                         }
                         if (mCamera.prepareAudio(mResolution.getAudioBitrate(), 44100, false, true, true, true)
-                                && mCamera.prepareVideo(mWidth, mHeight, /*mCamera.getFps()*/ mResolution.getFps(), mResolution.getVideoBitrate(), false, CameraHelper.getCameraOrientation(mActivity)
+                                && mCamera.prepareVideo(mWidth, mHeight, /*mCamera.getFps()*/ mResolution.getFps(),
+                                mResolution.getVideoBitrate(), false, CameraHelper.getCameraOrientation(mActivity)
                                 /*CameraHelper.chooseCameraOrientation(mActivity, 0)*/)) {
-                            FullLog.LogD("checkUrlLive:" + mUrl + " -- " + mWidth + " -- " + mHeight);
+                            FullLog.LogD("checkmResolution3:" + mUrl + " -- " + mWidth + " -- " + mHeight);
                             mCamera.startStream(mUrl);
                             mListener.onLiveStarting();
                             stateLive = STARTING;
@@ -1126,7 +1127,7 @@ public class LiveManager {
 
         @Override
         public void refresh() {
-            FullLog.LogD("CameraSourceRefresh=>", "123");
+            FullLog.LogD("checkmResolution=>", "123");
             if (fps > 0) {
                 setInfoLive(width, height, bitrate, fps);
             }
@@ -1208,6 +1209,10 @@ public class LiveManager {
                 mResolution = Resolution.HD30;
             }
             mFps = mResolution.getFps();
+            mWidth = mResolution.getWidth();
+            mHeight = mResolution.getHeight();
+
+//            mResolution = new Resolution(width,height,bitrate,fps);
             FullLog.LogD("checkmResolution: " + mFps + " -- " + fpsRange[1] + " -- " + mResolution.getFps() + " -- " + mResolution.getVideoBitrate() + " -- " + mResolution.getHeight() + " -- " + mResolution.getWidth());
 
         }

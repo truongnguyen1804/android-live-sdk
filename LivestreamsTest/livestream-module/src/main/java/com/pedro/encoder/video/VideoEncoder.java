@@ -121,10 +121,10 @@ public class VideoEncoder implements GetCameraData {
             // for correct encoding resolution
             String resolution;
             if (!hardwareRotation && (rotation == 90 || rotation == 270)) {
-                resolution = height + "x1" + width;
+                resolution = height + "x1 " + width;
                 videoFormat = MediaFormat.createVideoFormat(type, height, width);
             } else {
-                resolution = width + "x" + height;
+                resolution = width + "x " + height;
                 videoFormat = MediaFormat.createVideoFormat(type, width, height);
             }
 

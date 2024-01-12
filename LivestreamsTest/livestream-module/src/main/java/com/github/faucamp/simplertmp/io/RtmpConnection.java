@@ -135,7 +135,7 @@ public class RtmpConnection implements RtmpPublisher {
             if (!tlsEnabled) {
                 socket = new Socket();
                 SocketAddress socketAddress = new InetSocketAddress(host, port);
-                socket.connect(socketAddress, 5000);
+                socket.connect(socketAddress, 15000);
             } else {
                 socket = CreateSSLSocket.createSSlSocket(host, port);
                 if (socket == null) throw new IOException("Socket creation failed");
@@ -197,7 +197,7 @@ public class RtmpConnection implements RtmpPublisher {
         }
         synchronized (connectingLock) {
             try {
-                connectingLock.wait(5000);
+                connectingLock.wait(15000);
             } catch (InterruptedException ex) {
                 // do nothing
             }
@@ -315,7 +315,7 @@ public class RtmpConnection implements RtmpPublisher {
         // Waiting for "NetStream.Publish.Start" response.
         synchronized (publishLock) {
             try {
-                publishLock.wait(5000);
+                publishLock.wait(15000);
             } catch (InterruptedException ex) {
                 // do nothing
             }

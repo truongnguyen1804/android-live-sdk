@@ -133,14 +133,14 @@ public class RtspClient {
                             connectionSocket = new Socket();
                             SocketAddress socketAddress =
                                     new InetSocketAddress(commandsManager.getHost(), commandsManager.getPort());
-                            connectionSocket.connect(socketAddress, 5000);
+                            connectionSocket.connect(socketAddress, 15000);
                         } else {
                             connectionSocket = CreateSSLSocket.createSSlSocket(commandsManager.getHost(),
                                     commandsManager.getPort());
                             if (connectionSocket == null)
                                 throw new IOException("Socket creation failed");
                         }
-                        connectionSocket.setSoTimeout(5000);
+                        connectionSocket.setSoTimeout(15000);
                         reader = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
                         outputStream = connectionSocket.getOutputStream();
                         writer = new BufferedWriter(new OutputStreamWriter(outputStream));
