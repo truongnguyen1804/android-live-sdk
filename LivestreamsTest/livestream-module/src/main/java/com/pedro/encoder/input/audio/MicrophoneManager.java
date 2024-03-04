@@ -6,7 +6,11 @@ import android.media.MediaRecorder;
 import android.util.Log;
 
 import com.pedro.encoder.audio.DataTaken;
+import com.sigma.FullLog;
 import com.sigma.live.KaraokeManager;
+
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 /**
  * Created by pedro on 19/01/17.
@@ -50,9 +54,9 @@ public class MicrophoneManager {
                                  boolean noiseSuppressor, boolean autoGainControl) {
         this.sampleRate = sampleRate;
         if (!isStereo) channel = AudioFormat.CHANNEL_IN_MONO;
-        audioRecord =
-                new AudioRecord(MediaRecorder.AudioSource.DEFAULT, sampleRate, channel, audioFormat,
+        audioRecord = new AudioRecord(MediaRecorder.AudioSource.DEFAULT, sampleRate, channel, audioFormat,
                         getPcmBufferSize() * 4);
+
         audioPostProcessEffect = new AudioPostProcessEffect(audioRecord.getAudioSessionId());
         if (echoCanceler) audioPostProcessEffect.enableEchoCanceler();
         if (noiseSuppressor) audioPostProcessEffect.enableNoiseSuppressor();
@@ -111,13 +115,41 @@ public class MicrophoneManager {
      * @return Object with size and PCM buffer data
      */
     private DataTaken read() {
+
         int size = audioRecord.read(pcmBuffer, 0, pcmBuffer.length);
         if (size <= 0) {
             return null;
         }
+        pcmBuffer = setVolume(pcmBuffer,1.5f);
         byte res[] = muted ? pcmBufferMuted : pcmBuffer;
         //res = KaraokeManager.getInstance().apply(res, size);
+
+//        FullLog.LogD("bytelenght: "+ res.length);
+//        for (byte value: res){
+//            FullLog.LogD("bytevalue: "+value);
+//
+//        }
+
         return new DataTaken(res, size);
+    }
+
+    private static final int USHORT_MASK = (1 << 16) - 1;
+
+    private byte[] setVolume(byte[] audioSamples, float volume){
+        ByteBuffer inputBuffer = ByteBuffer.wrap(audioSamples).order(ByteOrder.LITTLE_ENDIAN);
+        ByteBuffer outputBuffer = ByteBuffer.allocate(audioSamples.length).order(ByteOrder.LITTLE_ENDIAN);
+        int sample;
+        while (inputBuffer.hasRemaining()) {
+            sample = (int) inputBuffer.getShort();
+            sample *= volume;
+            if (sample > 32767) {
+                sample = 32767;
+            } else if (sample < -32768) {
+                sample = -32768;
+            }
+            outputBuffer.putShort((short) (sample));
+        }
+        return outputBuffer.array();
     }
 
     /**

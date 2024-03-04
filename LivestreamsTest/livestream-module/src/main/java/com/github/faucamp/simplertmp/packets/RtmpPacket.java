@@ -3,6 +3,7 @@ package com.github.faucamp.simplertmp.packets;
 import android.util.Log;
 
 import com.github.faucamp.simplertmp.io.ChunkStreamInfo;
+import com.sigma.FullLog;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -35,7 +36,7 @@ public abstract class RtmpPacket {
     public void writeTo(OutputStream out, final int chunkSize, final ChunkStreamInfo chunkStreamInfo)
             throws IOException {
 
-        Log.i("SrsFlvMuxer", "writeTo -- " + chunkSize + " -- " + chunkStreamInfo);
+        FullLog.LogD("SrsFlvMuxer", "writeTo -- " + chunkSize + " -- " + chunkStreamInfo);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         writeBody(baos);
         byte[] body = this instanceof ContentData ? array() : baos.toByteArray();

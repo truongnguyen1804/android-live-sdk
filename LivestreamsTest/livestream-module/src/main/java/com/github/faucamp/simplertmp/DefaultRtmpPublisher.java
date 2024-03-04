@@ -3,6 +3,7 @@ package com.github.faucamp.simplertmp;
 import android.util.Log;
 
 import com.github.faucamp.simplertmp.io.RtmpConnection;
+import com.sigma.FullLog;
 
 import net.ossrs.rtmp.ConnectCheckerRtmp;
 
@@ -36,7 +37,7 @@ public class DefaultRtmpPublisher implements RtmpPublisher {
 
     @Override
     public void publishVideoData(byte[] data, int size, int dts) {
-        Log.i("SrsFlvMuxer", "publishVideoData: 3 " + size + " -- " + dts);
+        FullLog.LogD("SrsFlvMuxer", "publishVideoData: 3 " + size + " -- " + dts);
         rtmpConnection.publishVideoData(data, size, dts);
     }
 

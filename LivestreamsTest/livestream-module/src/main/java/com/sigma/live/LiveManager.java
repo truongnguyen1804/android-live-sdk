@@ -981,8 +981,7 @@ public class LiveManager {
                             printConfig();
                             if (mLedEnable) setLedEnable(true);
                             return;
-                        }
-                        else {
+                        } else {
                             mListener.onPrepareError(new Exception("prepare is error!"));
                         }
                     } catch (Exception ex) {
@@ -1443,7 +1442,6 @@ public class LiveManager {
                     handlers.removeCallbacks(runnablePrepare);
                     handlers.postDelayed(runnablePrepare, 2000);
 
-
                 } catch (Exception ex) {
                     mListener.onLiveError(ex);
                     ex.printStackTrace();
@@ -1464,7 +1462,8 @@ public class LiveManager {
                     setInfoLive(width, height, bitrate, fps);
                 }
                 if (mDisplay.prepareAudio(mResolution.getAudioBitrate(), 48000, false, true, true, true)
-                        && mDisplay.prepareVideo(mResolution.getWidth(), mResolution.getHeight(), mFps, mResolution.getVideoBitrate(), false, 0, 320)) {
+
+                        && mDisplay.prepareVideo((rotation > -45 && rotation < 45) ? mResolution.getWidth() : mResolution.getHeight(), (rotation > -45 && rotation < 45) ? mResolution.getHeight() : mResolution.getWidth(), mFps, mResolution.getVideoBitrate(), false, 0, 320)) {
 
                     if (isMyServiceRunning(SigmaService.class, mActivity)) {
                         Intent intent = new Intent(mActivity, SigmaService.class);

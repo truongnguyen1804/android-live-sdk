@@ -57,6 +57,7 @@ public class ScreenActivity extends AppCompatActivity {
                     } else {
                         FullLog.LogD("setOnClickListener2");
                         LiveManager.getInstance().start("rtmp://live.twitch.tv/app/live_926961558_dieFvvmelCjlO7ghTejMDm1WGXytCk");
+//                        LiveManager.getInstance().start("rtmp://ingest-ottcore.vtccore.com:1935/origin/b8097ccc699b46a3bd05a1690f95977d");
                     }
                 } else {
                     Toast.makeText(ScreenActivity.this, "Cần cấp quyền", Toast.LENGTH_LONG).show();
@@ -90,7 +91,7 @@ public class ScreenActivity extends AppCompatActivity {
 
         try {
 //            if (LiveManager.mVideoSource == null)
-            LiveManager.getInstance().setInfoLive(500, 1080, 10000, 30);
+            LiveManager.getInstance().setInfoLive(500, 720, 10000, 30);
                 LiveManager.getInstance().setupScreenStream(this, findViewById(R.id.view_screen),
                         new LiveListener() {
                             @Override

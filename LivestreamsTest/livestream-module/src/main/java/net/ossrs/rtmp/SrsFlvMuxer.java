@@ -251,11 +251,11 @@ public class SrsFlvMuxer {
     long lastTime;
 
     private void sendFlvTag(SrsFlvFrame frame) {
-        Log.i(TAG, "sendFlvTag: 1 " + connected + " -- " + frame);
+        FullLog.LogD(TAG, "sendFlvTag: 1 " + connected + " -- " + frame);
         if (!connected || frame == null) {
             return;
         }
-        Log.i(TAG, "sendFlvTag: 2 " + connected + " -- " + frame);
+        FullLog.LogD(TAG, "sendFlvTag: 2 " + connected + " -- " + frame);
         SigmaMonitor.track(frame.flvTag.size(), frame.is_video());
         if (frame.is_video()) {
 
@@ -923,7 +923,7 @@ public class SrsFlvMuxer {
         }
 
         public void writeVideoSample(final ByteBuffer bb, MediaCodec.BufferInfo bi) {
-            Log.i(TAG, "writeVideoSample: " + bi.size + " -- first");
+            FullLog.LogD(TAG, "writeVideoSample: " + bi.size + " -- first");
             if (bi.size < 4) return;
 
 
@@ -932,7 +932,7 @@ public class SrsFlvMuxer {
             int type = SrsCodecVideoAVCFrame.InterFrame;
             SrsFlvFrameBytes frame = avc.demuxAnnexb(bb, bi.size, true);
             int nal_unit_type = frame.data.get(0) & 0x1f;
-            Log.i(TAG, "writeVideoSample: " + bi.size + " -- " + nal_unit_type);
+            FullLog.LogD(TAG, "writeVideoSample: " + bi.size + " -- " + nal_unit_type);
             if (nal_unit_type == SrsAvcNaluType.IDR) {
                 type = SrsCodecVideoAVCFrame.KeyFrame;
             } else if (nal_unit_type == SrsAvcNaluType.SPS || nal_unit_type == SrsAvcNaluType.PPS) {
@@ -1000,7 +1000,7 @@ public class SrsFlvMuxer {
         }
 
         private void writeH264IpbFrame(ArrayList<SrsFlvFrameBytes> frames, int frame_type, int dts) {
-            Log.i(TAG, "writeH264IpbFrame: " + Pps + " -- " + Sps);
+            FullLog.LogD(TAG, "writeH264IpbFrame: " + Pps + " -- " + Sps);
             // when sps or pps not sent, ignore the packet.
             // @see https://github.com/simple-rtmp-server/srs/issues/203
             if (Pps == null || Sps == null) {

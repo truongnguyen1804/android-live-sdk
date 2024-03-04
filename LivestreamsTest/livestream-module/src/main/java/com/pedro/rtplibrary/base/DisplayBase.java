@@ -144,6 +144,7 @@ public abstract class DisplayBase implements GetAacData, GetVideoData, GetMicrop
                                 boolean noiseSuppressor, boolean autoGainControl) {
         microphoneManager.createMicrophone(sampleRate, isStereo, echoCanceler, noiseSuppressor, autoGainControl);
         prepareAudioRtp(isStereo, sampleRate);
+
         return audioEncoder.prepareAudioEncoder(bitrate, sampleRate, isStereo);
     }
 
