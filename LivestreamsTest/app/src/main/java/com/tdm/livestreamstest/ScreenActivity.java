@@ -32,6 +32,7 @@ public class ScreenActivity extends AppCompatActivity {
         imgPlay = findViewById(R.id.img_live);
         imgMic = findViewById(R.id.img_mic);
         imgCamera = findViewById(R.id.img_camera);
+        LiveManager.getInstance().setOrientation(0);
         findViewById(R.id.img_refresh).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

@@ -65,6 +65,7 @@ public class LiveManager {
     private int REQUEST_CODE_STREAM = 9889;
     private NotificationManager mNotificationManager;
     private int rotation = 0;
+    private boolean isVertical = true;
     private PreviewSizeListener previewSizeListener;
 
     private boolean isCallStop = false;
@@ -82,7 +83,30 @@ public class LiveManager {
 
     public void setOrientation(int orientation) {
         this.rotation = orientation;
+        isVertical = isVertical(orientation);
         CameraHelper.setCameraOrientation(null, rotation);
+    }
+
+    private boolean isVertical(int orientation) {
+        int r = rotation % 360;
+        if (r < 0) {
+            r = 360 + r;
+        }
+        if (r >= 315 || r <= 45) {
+            return true;
+        } else if (r <= 135) {
+//            orientation = 90;
+            orientation = 0;
+            return false;
+        } else if (r <= 225) {
+//            orientation = 180;
+            orientation = 270;
+            return true;
+        } else {
+//            orientation = 270;
+            orientation = 180;
+            return false;
+        }
     }
 
     private ConnectCheckerRtmp mConnectCheckRtmp = new ConnectCheckerRtmp() {
@@ -164,7 +188,6 @@ public class LiveManager {
 //                                reStartConnect(3000);
                         }
                     }
-
                 }
             });
         }
@@ -1463,7 +1486,7 @@ public class LiveManager {
                 }
                 if (mDisplay.prepareAudio(mResolution.getAudioBitrate(), 48000, false, true, true, true)
 
-                        && mDisplay.prepareVideo((rotation > -45 && rotation < 45) ? mResolution.getWidth() : mResolution.getHeight(), (rotation > -45 && rotation < 45) ? mResolution.getHeight() : mResolution.getWidth(), mFps, mResolution.getVideoBitrate(), false, 0, 320)) {
+                        && mDisplay.prepareVideo(!isVertical ? mResolution.getWidth() : mResolution.getHeight(), !isVertical ? mResolution.getHeight() : mResolution.getWidth(), mFps, mResolution.getVideoBitrate(), false, 0, 320)) {
 
                     if (isMyServiceRunning(SigmaService.class, mActivity)) {
                         Intent intent = new Intent(mActivity, SigmaService.class);
