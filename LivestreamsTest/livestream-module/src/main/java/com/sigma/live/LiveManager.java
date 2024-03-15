@@ -1477,8 +1477,8 @@ public class LiveManager {
         Runnable runnablePrepare = new Runnable() {
             @Override
             public void run() {
-                if (mDisplay == null || mResolution == null || mActivity == null || mListener == null) {
-                    mListener.onPrepareError(new Exception("prepare is error at mDisplay: " + (mDisplay == null) + " -- mResolution: " + (mResolution == null) + " -- mActivity: " + (mActivity == null) + " -- mListener" + (mListener == null)));
+                if (mDisplay == null || mResolution == null || mActivity == null ) {
+                    mListener.onPrepareError(new Exception("prepare is error at mDisplay: " + (mDisplay == null) + " -- mResolution: " + (mResolution == null) + " -- mActivity: " + (mActivity == null) ));
                     return;
                 }
                 if (fps > 0) {
