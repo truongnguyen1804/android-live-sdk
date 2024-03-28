@@ -2,9 +2,12 @@ package com.pedro.encoder.input.audio;
 
 import android.media.AudioFormat;
 import android.media.AudioRecord;
+import android.media.AudioRouting;
 import android.media.MediaRecorder;
+import android.os.Build;
 import android.util.Log;
 
+import com.github.faucamp.simplertmp.Util;
 import com.pedro.encoder.audio.DataTaken;
 import com.sigma.FullLog;
 import com.sigma.live.KaraokeManager;
@@ -54,13 +57,13 @@ public class MicrophoneManager {
                                  boolean noiseSuppressor, boolean autoGainControl) {
         this.sampleRate = sampleRate;
         if (!isStereo) channel = AudioFormat.CHANNEL_IN_MONO;
-        audioRecord = new AudioRecord(MediaRecorder.AudioSource.DEFAULT, sampleRate, channel, audioFormat,
-                        getPcmBufferSize() * 4);
+        audioRecord = new AudioRecord(MediaRecorder.AudioSource.VOICE_PERFORMANCE, sampleRate, channel, audioFormat,
+                getPcmBufferSize() * 4);
 
-        audioPostProcessEffect = new AudioPostProcessEffect(audioRecord.getAudioSessionId());
-        if (echoCanceler) audioPostProcessEffect.enableEchoCanceler();
-        if (noiseSuppressor) audioPostProcessEffect.enableNoiseSuppressor();
-        if (autoGainControl) audioPostProcessEffect.enableAutoGainControl();
+//        audioPostProcessEffect = new AudioPostProcessEffect(audioRecord.getAudioSessionId());
+//        if (echoCanceler) audioPostProcessEffect.enableEchoCanceler();
+//        if (noiseSuppressor) audioPostProcessEffect.enableNoiseSuppressor();
+//        if (autoGainControl) audioPostProcessEffect.enableAutoGainControl();
         String chl = (isStereo) ? "Stereo" : "Mono";
         Log.i(TAG, "Microphone created, " + sampleRate + "hz, " + chl);
         created = true;
@@ -120,7 +123,15 @@ public class MicrophoneManager {
         if (size <= 0) {
             return null;
         }
-        pcmBuffer = setVolume(pcmBuffer,1.5f);
+        float volume = 1f;
+        String manufacturer = android.os.Build.MANUFACTURER;
+        if (manufacturer.equals("samsung")) {
+            volume = 5.5f;
+        } else {
+            volume = 1.5f;
+        }
+
+        pcmBuffer = setVolume(pcmBuffer, volume);
         byte res[] = muted ? pcmBufferMuted : pcmBuffer;
         //res = KaraokeManager.getInstance().apply(res, size);
 
@@ -135,10 +146,41 @@ public class MicrophoneManager {
 
     private static final int USHORT_MASK = (1 << 16) - 1;
 
-    private byte[] setVolume(byte[] audioSamples, float volume){
+    private byte[] setVolume(byte[] audioSamples, float volume) {
+
+//        if (ByteOrder.nativeOrder() == ByteOrder.BIG_ENDIAN) {
+//            FullLog.LogD("checkByteODer " + "BIG_ENDIAN");
+//        } else if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
+//            FullLog.LogD("checkByteODer " + "LITTLE_ENDIAN");
+//        }
+//        FullLog.LogD("CheckByteOderAudio " + (ByteBuffer.wrap(audioSamples).order() == ByteOrder.BIG_ENDIAN ? " BIG_ENDIAN" : "LITTLE_ENDIAN"));
+//        System.out.printf("\n \n \n");
+//        for (int i = 0; i < audioSamples.length; i++) {
+//            System.out.printf("%02x "+"\n", audioSamples[i] & 0xFF );
+//        }
+
+
+//        ByteBuffer inputBuffer = ByteBuffer.wrap(audioSamples).order(ByteOrder.BIG_ENDIAN);
+
+//        ByteOrder byteOrder = ByteOrder.LITTLE_ENDIAN;
+//
+//        if (audioSamples.length < 2) {
+//            return null;
+//        }
+//        if (audioSamples[0] > audioSamples[1]) {
+//            byteOrder = ByteOrder.BIG_ENDIAN;
+//            FullLog.LogD("checkByteODer " + "BIG_ENDIAN");
+//        } else {
+//            byteOrder = ByteOrder.LITTLE_ENDIAN;
+//            FullLog.LogD("checkByteODer " + "LITTLE_ENDIAN");
+//        }
+
         ByteBuffer inputBuffer = ByteBuffer.wrap(audioSamples).order(ByteOrder.LITTLE_ENDIAN);
+        FullLog.LogD("checkByteODer " + inputBuffer.order());
         ByteBuffer outputBuffer = ByteBuffer.allocate(audioSamples.length).order(ByteOrder.LITTLE_ENDIAN);
+
         int sample;
+
         while (inputBuffer.hasRemaining()) {
             sample = (int) inputBuffer.getShort();
             sample *= volume;
@@ -147,7 +189,7 @@ public class MicrophoneManager {
             } else if (sample < -32768) {
                 sample = -32768;
             }
-            outputBuffer.putShort((short) (sample));
+            outputBuffer.putShort((short) sample);
         }
         return outputBuffer.array();
     }
@@ -173,11 +215,11 @@ public class MicrophoneManager {
             audioRecord.release();
             audioRecord = null;
         }
-        if (audioPostProcessEffect != null) {
-            audioPostProcessEffect.releaseEchoCanceler();
-            audioPostProcessEffect.releaseNoiseSuppressor();
-            audioPostProcessEffect.releaseAutoGainControl();
-        }
+//        if (audioPostProcessEffect != null) {
+//            audioPostProcessEffect.releaseEchoCanceler();
+//            audioPostProcessEffect.releaseNoiseSuppressor();
+//            audioPostProcessEffect.releaseAutoGainControl();
+//        }
         Log.i(TAG, "Microphone stopped");
     }
 

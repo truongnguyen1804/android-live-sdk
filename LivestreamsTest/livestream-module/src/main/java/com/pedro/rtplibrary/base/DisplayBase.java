@@ -557,4 +557,3 @@ public abstract class DisplayBase implements GetAacData, GetVideoData, GetMicrop
         videoEncoder.prepareImage(bitmap);
     }
 }
-

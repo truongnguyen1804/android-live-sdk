@@ -1484,10 +1484,8 @@ public class LiveManager {
                 if (fps > 0) {
                     setInfoLive(width, height, bitrate, fps);
                 }
-                if (mDisplay.prepareAudio(mResolution.getAudioBitrate(), 48000, false, true, true, true)
-
+                if (mDisplay.prepareAudio(mResolution.getAudioBitrate(), 48000, false, true, false, true)
                         && mDisplay.prepareVideo(!isVertical ? mResolution.getWidth() : mResolution.getHeight(), !isVertical ? mResolution.getHeight() : mResolution.getWidth(), mFps, mResolution.getVideoBitrate(), false, 0, 320)) {
-
                     if (isMyServiceRunning(SigmaService.class, mActivity)) {
                         Intent intent = new Intent(mActivity, SigmaService.class);
                         mActivity.stopService(intent);

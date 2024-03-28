@@ -58,7 +58,8 @@ public class ScreenActivity extends AppCompatActivity {
                     } else {
                         FullLog.LogD("setOnClickListener2");
                         LiveManager.getInstance().start("rtmp://live.twitch.tv/app/live_926961558_dieFvvmelCjlO7ghTejMDm1WGXytCk");
-//                        LiveManager.getInstance().start("rtmp://ingest-ottcore.vtccore.com:1935/origin/b8097ccc699b46a3bd05a1690f95977d");
+//                        LiveManager.getInstance().start("rtmp://ingest-ottcore.vtccore.com:1935/origin/45ca370b366340fcbc09af1663917010");
+
                     }
                 } else {
                     Toast.makeText(ScreenActivity.this, "Cần cấp quyền", Toast.LENGTH_LONG).show();

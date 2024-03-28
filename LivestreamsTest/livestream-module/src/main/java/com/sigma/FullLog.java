@@ -5,7 +5,7 @@ import android.util.Log;
 import java.util.Stack;
 
 public class FullLog {
-    private static boolean IS_DEBUG_D = false;
+    private static boolean IS_DEBUG_D = true;
     private static boolean IS_DEBUG_W = false;
     private static boolean IS_DEBUG_E = false;
     private static String TAG = "SIGMA_LIVE ===>";
