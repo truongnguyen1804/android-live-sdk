@@ -126,7 +126,7 @@ public class MicrophoneManager {
         float volume = 1f;
         String manufacturer = android.os.Build.MANUFACTURER;
         if (manufacturer.equals("samsung")) {
-            volume = 5.5f;
+            volume = 7.5f;
         } else {
             volume = 1.5f;
         }
@@ -183,11 +183,13 @@ public class MicrophoneManager {
 
         while (inputBuffer.hasRemaining()) {
             sample = (int) inputBuffer.getShort();
-            sample *= volume;
-            if (sample > 32767) {
-                sample = 32767;
-            } else if (sample < -32768) {
-                sample = -32768;
+            if (Math.abs(sample) < 32767 / volume) {
+                sample *= volume;
+                if (sample > 32767) {
+                    sample = 32767;
+                } else if (sample < -32768) {
+                    sample = -32768;
+                }
             }
             outputBuffer.putShort((short) sample);
         }
