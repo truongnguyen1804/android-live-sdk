@@ -53,17 +53,36 @@ public class MicrophoneManager {
     /**
      * Create audio record with params
      */
+
+    int[] sources = new int[]{MediaRecorder.AudioSource.MIC, MediaRecorder.AudioSource.DEFAULT, MediaRecorder.AudioSource.CAMCORDER, MediaRecorder.AudioSource.VOICE_COMMUNICATION, MediaRecorder.AudioSource.VOICE_RECOGNITION};
+
     public void createMicrophone(int sampleRate, boolean isStereo, boolean echoCanceler,
                                  boolean noiseSuppressor, boolean autoGainControl) {
         this.sampleRate = sampleRate;
         if (!isStereo) channel = AudioFormat.CHANNEL_IN_MONO;
-        audioRecord = new AudioRecord(MediaRecorder.AudioSource.VOICE_PERFORMANCE, sampleRate, channel, audioFormat,
-                getPcmBufferSize() * 4);
+//        audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, sampleRate, channel, audioFormat,
+//                getPcmBufferSize() * 4);
+        for (int source : sources) {
+            try {
+                AudioRecord audioRecord2 = new AudioRecord(source, sampleRate, channel, audioFormat, getPcmBufferSize() * 4);
+                if (audioRecord2.getState() != AudioRecord.STATE_INITIALIZED) {
+                    audioRecord2 = null;
+                }
+                audioRecord = audioRecord2;
+                FullLog.LogD("checkSourceAudio " + source);
+            } catch (Exception exception) {
+                audioRecord = null;
+            }
+            if (audioRecord != null) {
+                break;
+            }
+
+        }
 
 //        audioPostProcessEffect = new AudioPostProcessEffect(audioRecord.getAudioSessionId());
-//        if (echoCanceler) audioPostProcessEffect.enableEchoCanceler();
-//        if (noiseSuppressor) audioPostProcessEffect.enableNoiseSuppressor();
-//        if (autoGainControl) audioPostProcessEffect.enableAutoGainControl();
+//        /*if (echoCanceler)*/ audioPostProcessEffect.enableEchoCanceler();
+//       /* if (noiseSuppressor)*/ audioPostProcessEffect.enableNoiseSuppressor();
+//        /*if (autoGainControl)*/ audioPostProcessEffect.enableAutoGainControl();
         String chl = (isStereo) ? "Stereo" : "Mono";
         Log.i(TAG, "Microphone created, " + sampleRate + "hz, " + chl);
         created = true;
@@ -126,7 +145,7 @@ public class MicrophoneManager {
         float volume = 1f;
         String manufacturer = android.os.Build.MANUFACTURER;
         if (manufacturer.equals("samsung")) {
-            volume = 7.5f;
+            volume = 1.5f;
         } else {
             volume = 1.5f;
         }
@@ -183,7 +202,7 @@ public class MicrophoneManager {
 
         while (inputBuffer.hasRemaining()) {
             sample = (int) inputBuffer.getShort();
-            if (Math.abs(sample) < 32767 / volume) {
+            if (Math.abs(sample) < (32767 / volume)) {
                 sample *= volume;
                 if (sample > 32767) {
                     sample = 32767;
