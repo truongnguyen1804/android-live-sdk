@@ -58,6 +58,7 @@ public class LiveManager {
 
     private String TAG = "live_manager";
     private Resolution mResolution = Resolution.FULLHD30;
+    private Camera.Size cameraSize = null;
     private Activity mActivity;
     private LiveListener mListener;
     private String mUrl;
@@ -1213,12 +1214,13 @@ public class LiveManager {
 
 
             List<Resolution> resolutionListFps = new ArrayList<>();
+            List<Camera.Size> sizeList = camera.getParameters().getSupportedPreviewSizes();
             for (int i = 0; i < mResolutions.size(); i++) {
                 if (mResolutions.get(i).getFps() == fpsSelected) {
                     resolutionListFps.add(mResolutions.get(i));
                 }
             }
-            if (resolutionListFps.size() > 0) {
+            if (!resolutionListFps.isEmpty()) {
                 int deltaHeight = Math.abs(resolutionListFps.get(0).getHeight() - height);
                 mResolution = resolutionListFps.get(0);
                 for (int i = 0; i < resolutionListFps.size(); i++) {
@@ -1230,9 +1232,25 @@ public class LiveManager {
             } else {
                 mResolution = Resolution.HD30;
             }
+
+            if (!sizeList.isEmpty()) {
+                int deltaHeight = Math.abs(sizeList.get(0).height - mResolution.getHeight());
+                cameraSize = sizeList.get(0);
+                for (int i = 0; i < sizeList.size(); i++) {
+                    if (deltaHeight > (Math.abs(sizeList.get(i).height - mResolution.getHeight()))) {
+                        deltaHeight = Math.abs(sizeList.get(i).height - mResolution.getHeight());
+                        cameraSize = sizeList.get(i);
+                    }
+                }
+            } else {
+                cameraSize = camera.new Size(1280, 720);
+            }
+
             mFps = mResolution.getFps();
-            mWidth = mResolution.getWidth();
-            mHeight = mResolution.getHeight();
+//            mWidth = mResolution.getWidth();
+//            mHeight = mResolution.getHeight();
+            mWidth = cameraSize.width;
+            mHeight = cameraSize.height;
 
 //            mResolution = new Resolution(width,height,bitrate,fps);
             FullLog.LogD("checkmResolution: " + mFps + " -- " + fpsRange[1] + " -- " + mResolution.getFps() + " -- " + mResolution.getVideoBitrate() + " -- " + mResolution.getHeight() + " -- " + mResolution.getWidth());
@@ -1477,8 +1495,8 @@ public class LiveManager {
         Runnable runnablePrepare = new Runnable() {
             @Override
             public void run() {
-                if (mDisplay == null || mResolution == null || mActivity == null ) {
-                    mListener.onPrepareError(new Exception("prepare is error at mDisplay: " + (mDisplay == null) + " -- mResolution: " + (mResolution == null) + " -- mActivity: " + (mActivity == null) ));
+                if (mDisplay == null || mResolution == null || mActivity == null) {
+                    mListener.onPrepareError(new Exception("prepare is error at mDisplay: " + (mDisplay == null) + " -- mResolution: " + (mResolution == null) + " -- mActivity: " + (mActivity == null)));
                     return;
                 }
                 if (fps > 0) {
