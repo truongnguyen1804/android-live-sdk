@@ -255,7 +255,7 @@ public class SrsFlvMuxer {
         if (!connected || frame == null) {
             return;
         }
-        FullLog.LogD(TAG, "sendFlvTag: 2 " + connected + " -- " + frame);
+        FullLog.LogD(TAG, "sendFlvTag: 2 " + connected + " -- " + frame.flvTag.size());
         SigmaMonitor.track(frame.flvTag.size(), frame.is_video());
         if (frame.is_video()) {
 

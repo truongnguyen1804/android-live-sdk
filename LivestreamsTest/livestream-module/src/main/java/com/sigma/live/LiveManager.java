@@ -68,7 +68,6 @@ public class LiveManager {
     private int rotation = 0;
     private boolean isVertical = true;
     private PreviewSizeListener previewSizeListener;
-
     private boolean isCallStop = false;
     private boolean isSurfaceCreated = false;
 
@@ -759,6 +758,8 @@ public class LiveManager {
 
         void onPause(Boolean p);
 
+        void onStopSource();
+
         void reconnect();
 
         void stop();
@@ -1044,6 +1045,11 @@ public class LiveManager {
             FullLog.LogD(TAG + " onPause");
             LiveManager.this.setAudioEnable(p);
             LiveManager.this.setVideoEnable(p);
+        }
+
+        @Override
+        public void onStopSource() {
+
         }
 
         @Override
@@ -1444,6 +1450,12 @@ public class LiveManager {
             }
         }
 
+        @Override
+        public void onStopSource() {
+            if (mDisplay != null)
+                mDisplay.stopStreamForReconnect();
+        }
+
         public void startLive() {
             if (mDisplay != null && mListener != null) {
                 if (mDisplay.getData() != null) {
@@ -1758,6 +1770,11 @@ public class LiveManager {
 
         @Override
         public void onPause(Boolean p) {
+
+        }
+
+        @Override
+        public void onStopSource() {
 
         }
 

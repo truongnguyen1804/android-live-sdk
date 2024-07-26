@@ -57,8 +57,8 @@ public class ScreenActivity extends AppCompatActivity {
                         imgPlay.setImageResource(R.drawable.ic_play_arrow);
                     } else {
                         FullLog.LogD("setOnClickListener2");
-//                        LiveManager.getInstance().start("rtmp://live.twitch.tv/app/live_926961558_dieFvvmelCjlO7ghTejMDm1WGXytCk");
-                        LiveManager.getInstance().start("rtmp://txpush.rtmp.nimo.tv/live/su1639523573342r3b197b8551792127fde469b0116d75c2?guid=0a476dc4b1122b626d016a656b65ec9e&hyapp=81&hymuid=1639523573342&hyroom=84486504&psign=de7065700ae1cc5b1b461c16a36f674d&rtag=hIIe99AmLd&sru=9OU5DHQH1&txHost=txpush.rtmp.nimo.tv&ua=d2ViJjEuMC40Jm5pbW9UVg==&appid=81&room=84486504&muid=3279047133623&seq=1712128719662&streamcode=huya_inner_user");
+                        LiveManager.getInstance().start("rtmp://live.twitch.tv/app/live_926961558_dieFvvmelCjlO7ghTejMDm1WGXytCk");
+//                        LiveManager.getInstance().start("rtmp://txpush.rtmp.nimo.tv/live/su1639523573342r3b197b8551792127fde469b0116d75c2?guid=0a476dc4b1122b626d016a656b65ec9e&hyapp=81&hymuid=1639523573342&hyroom=84486504&psign=de7065700ae1cc5b1b461c16a36f674d&rtag=hIIe99AmLd&sru=9OU5DHQH1&txHost=txpush.rtmp.nimo.tv&ua=d2ViJjEuMC40Jm5pbW9UVg==&appid=81&room=84486504&muid=3279047133623&seq=1712128719662&streamcode=huya_inner_user");
 //                        LiveManager.getInstance().start("rtmp://ingest-ottcore.vtccore.com:1935/origin/45ca370b366340fcbc09af1663917010");
 
                     }
@@ -137,6 +137,7 @@ public class ScreenActivity extends AppCompatActivity {
 
                             @Override
                             public void onNewBitrateReceived(long b) {
+                                Log.d("LiveListener=>", "onNewBitrateReceived "+ b);
                             }
 
                             @Override

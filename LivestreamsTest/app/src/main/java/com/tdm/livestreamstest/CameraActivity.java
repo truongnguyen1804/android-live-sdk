@@ -67,6 +67,7 @@ public class CameraActivity extends AppCompatActivity {
 //                        LiveManager.getInstance().setInfoLive(500, 600, 10000, 5);
 
 //                        LiveManager.getInstance().setResolution(Resolution.HD15);
+//                        LiveManager.getInstance().start("rtmp://live.twitch.tv/app/live_926961558_dieFvvmelCjlO7ghTejMDm1WGXytCk");
                         LiveManager.getInstance().start("rtmp://live.twitch.tv/app/live_926961558_dieFvvmelCjlO7ghTejMDm1WGXytCk");
 //                        LiveManager.getInstance().start("rtmp://live.ori2.vtc.vn:1935/origin2/f7d3966bc1244ad8ba658395bf1313b6");
 //                        LiveManager.getInstance().start("rtmp://live.twitch.tv/app/live_162311279_a2TQ6agKAohE6VyCuwFO6zq5xC74FJ");

@@ -46,5 +46,6 @@ public class BitrateControl {
             mListener.onNewBitrateRtmp(mBitrate * remain / 100);
             mLastTime = now;
         }
+//        mListener.onNewBitrateRtmp(mBitrate * remain / 100);
     }
 }
